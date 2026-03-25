@@ -1,4 +1,5 @@
       <script src="js/jquery.min.js"></script>
+      <script src="js/popper.min.js"></script>
       <script src="js/bootstrap.min.js"></script>
       <script src="js/select2.min.js"></script>
       <script src="js/jquery.magnific-popup.min.js"></script>

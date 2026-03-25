@@ -43,10 +43,6 @@
                                           <input type="text" class="form-control" id="lname" value="Phát">
                                        </div>
                                        <div class="form-group col-sm-6">
-                                          <label for="uname">Tên tài khoản:</label>
-                                          <input type="text" class="form-control" id="uname" value="PhatTB">
-                                       </div>
-                                       <div class="form-group col-sm-6">
                                           <label class="d-block">Giới tính:</label>
                                           <div class="custom-control custom-radio custom-control-inline">
                                              <input type="radio" id="customRadio6" name="customRadio1" class="custom-control-input" checked="">

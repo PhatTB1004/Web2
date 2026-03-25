@@ -6,316 +6,315 @@
 
 <?php include "includes/database.php"; ?>
 
-        <!-- Page Content  -->
-        <div id="content-page" class="content-page">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="iq-card">
-                            <div class="iq-card-body p-0">
-                                <div class="iq-edit-list">
-                                    <ul class="iq-edit-profile d-flex nav nav-pills">
-                                        <li class="col-md-4 p-0">
-                                            <a class="nav-link active"  href="#">
-                                                Thông tin cá nhân
-                                            </a>
-                                        </li>
-                                        <li class="col-md-4 p-0">
-                                            <a class="nav-link"  href="#">
-                                                Email và SMS
-                                            </a>
-                                        </li>
-                                        <li class="col-md-4 p-0">
-                                            <a class="nav-link"  href="#">
-                                                Quản lý liên hệ
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <div class="iq-edit-list-data">
-                            <div class="tab-content">
-                                <div class="tab-pane fade active show" id="personal-information" role="tabpanel">
-                                    <div class="iq-card">
-                                        <div class="iq-card-header d-flex justify-content-between">
-                                            <div class="iq-header-title">
-                                                <h4 class="card-title">Thông tin cá nhân</h4>
-                                            </div>
-                                        </div>
-                                        <div class="iq-card-body">
-                                            <form>
-                                                <div class="form-group row align-items-center">
-                                                    <div class="col-md-12">
-                                                        <div class="profile-img-edit">
-                                                            <img class="profile-pic" src="images/user/1.jpg"
-                                                                alt="profile-pic">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class=" row align-items-center">
-                                                    <div class="form-group col-sm-6">
-                                                        <label for="fname">Họ: </label> Đào Thiện
-                                                    </div>
-                                                    <div class="form-group col-sm-6">
-                                                        <label for="lname">Tên: </label> Phát
-                                                    </div>
-                                                    <div class="form-group col-sm-6">
-                                                        <label for="uname">Tên tài khoản: </label> User
-                                                    </div>
-                                                    <div class="form-group col-sm-6">
-                                                        <label class="d">Giới tính: </label> Nam
-                                                    </div>
-                                                    <div class="form-group col-sm-6">
-                                                        <label for="dob">Ngày sinh: </label> 10/04/2006
-                                                    </div>
-                                                    <div class="form-group col-sm-6">
-                                                        <label>Quốc gia: </label> Việt Nam
-                                                    </div>
-                                                    <div class="form-group col-sm-6">
-                                                        <label>Tỉnh/Thành phố: </label> Hồ Chí Minh
-                                                    </div>
-                                                    <div class="form-group col-sm-12">
-                                                        <label>Địa chỉ:</label>
-                                                        10/41A Âu Dương Lân
-                                                        Quận 8, Hồ Chí Minh
-                                                        Việt Nam
-                                                    </div>
-                                                </div>
-                                                <a href="profile-edit.php" class="btn btn-primary mr-2">Chỉnh sửa </a>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="chang-pwd" role="tabpanel">
-                                    <div class="iq-card">
-                                        <div class="iq-card-header d-flex justify-content-between">
-                                            <div class="iq-header-title">
-                                                <h4 class="card-title">Đơn hàng</h4>
-                                            </div>
-                                        </div>
-                                        <div class="iq-card-body">
-                                            <form>
-                                                <div class="form-group">
-                                                    <label>Vừa mới đây <i class="ri-arrow-right-s-line"></i></label>
-                                                    <li><a href="profile.php">
-                                                            <div class="media align-items-center">
-                                                                <div class="col-sm-1">
-
-                                                                    <img width="90" height="90"
-                                                                        class="img-fluid rounded"
-                                                                        src="images/checkout/01.jpg" alt="">
-                                                                </div>
-                                                                <div class="col-sm-5">
-                                                                    <h6>Economix - Các Nền Kinh Tế Vận Hành</h6>
-                                                                    <p>x1</p>
-                                                                    <h6>2 sản phẩm khác <i
-                                                                            class="ri-arrow-down-s-line"></i></h6>
-                                                                </div>
-                                                                <div class="col-sm-4">
-                                                                    <p>Tổng tiền (3 sản phẩm): <label> 327.900đ</label>
-                                                                    </p>
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <p class="text-warning">Đang giao hàng
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </a>
-                                                    </li>
-                                                    <hr>
-                                                    <label>2 ngày trước <i class="ri-arrow-right-s-line"></i></label>
-                                                    <li><a href="profile.php">
-                                                            <div class="media align-items-center">
-                                                                <div class="col-sm-1">
-
-                                                                    <img width="90" height="90"
-                                                                        class="img-fluid rounded"
-                                                                        src="images/checkout/02.jpg" alt="">
-                                                                </div>
-                                                                <div class="col-sm-5">
-                                                                    <h6>Người Bán Hàng Vĩ Đại Nhất Thế Giới</h6>
-                                                                    <p>x1</p>
-                                                                </div>
-                                                                <div class="col-sm-4">
-                                                                    <p>Tổng tiền (1 sản phẩm): <label> 79.000đ</label>
-                                                                    </p>
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <p class="text-primary">Đã hoàn tất giao đơn hàng
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </a>
-                                                    </li>
-                                                    <hr>
-                                                    <label>3 ngày trước <i class="ri-arrow-right-s-line"></i></label>
-                                                    <li><a href="profile.php">
-                                                            <div class="media align-items-center">
-                                                                <div class="col-sm-1">
-
-                                                                    <img width="90" height="90"
-                                                                        class="img-fluid rounded"
-                                                                        src="images/checkout/03.jpg" alt="">
-                                                                </div>
-                                                                <div class="col-sm-5">
-                                                                    <h6>Một Đời Quản Trị</h6>
-                                                                    <p>x1</p>
-                                                                </div>
-                                                                <div class="col-sm-4">
-                                                                    <p>Tổng tiền (1 sản phẩm): <label> 100.000đ</label>
-                                                                    </p>
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <p class="text-danger">Đã hủy đơn hàng
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </a>
-                                                    </li>
-                                                    <hr>
-                                                    <label>5 ngày trước <i class="ri-arrow-right-s-line"></i></label>
-                                                    <li><a href="profile.php">
-                                                            <div class="media align-items-center">
-                                                                <div class="col-sm-1">
-
-                                                                    <img width="90" height="90"
-                                                                        class="img-fluid rounded"
-                                                                        src="images/browse-books/09.jpg" alt="">
-                                                                </div>
-                                                                <div class="col-sm-5">
-                                                                    <h6>My First Love</h6>
-                                                                    <p>x1</p>
-                                                                    <h6>2 sản phẩm khác <i
-                                                                            class="ri-arrow-down-s-line"></i></h6>
-                                                                </div>
-                                                                <div class="col-sm-4">
-                                                                    <p>Tổng tiền (3 sản phẩm): <label> 255.000đ</label>
-                                                                    </p>
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <p class="text-primary">Đã hoàn tất giao đơn hàng
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </a>
-                                                    </li>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="emailandsms" role="tabpanel">
-                                    <div class="iq-card">
-                                        <div class="iq-card-header d-flex justify-content-between">
-                                            <div class="iq-header-title">
-                                                <h4 class="card-title">Email và SMS</h4>
-                                            </div>
-                                        </div>
-                                        <div class="iq-card-body">
-                                            <form>
-                                                <div class="form-group row align-items-center">
-                                                    <label class="col-8 col-md-3" for="emailnotification">Thông báo tới
-                                                        Email :</label>
-                                                    <div class="col-4 col-md-9 custom-control custom-switch">
-                                                        <input type="checkbox" class="custom-control-input"
-                                                            id="emailnotification" checked="">
-                                                        <label class="custom-control-label"
-                                                            for="emailnotification"></label>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group row align-items-center">
-                                                    <label class="col-8 col-md-3" for="smsnotification">Thông báo tới
-                                                        SMS:</label>
-                                                    <div class="col-4 col-md-9 custom-control custom-switch">
-                                                        <input type="checkbox" class="custom-control-input"
-                                                            id="smsnotification" checked="">
-                                                        <label class="custom-control-label"
-                                                            for="smsnotification"></label>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group row align-items-center">
-                                                    <label class="col-md-3" for="npass">Khi nào gửi Email</label>
-                                                    <div class="col-md-9">
-                                                        <div class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="email01">
-                                                            <label class="custom-control-label" for="email01">Bạn có
-                                                                thông báo mới.</label>
-                                                        </div>
-                                                        <div class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="email02">
-                                                            <label class="custom-control-label" for="email02">Bạn đã gửi
-                                                                một tin nhắn trực tiếp</label>
-                                                        </div>
-                                                        <div class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="email03" checked="">
-                                                            <label class="custom-control-label" for="email03">Ai đó thêm
-                                                                bạn làm kết nối</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group row align-items-center">
-                                                    <label class="col-md-3" for="npass">Khi nào cần báo email</label>
-                                                    <div class="col-md-9">
-                                                        <div class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="email04">
-                                                            <label class="custom-control-label" for="email04"> Theo đơn
-                                                                đặt hàng mới.</label>
-                                                        </div>
-                                                        <div class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="email05">
-                                                            <label class="custom-control-label" for="email05"> Phê duyệt
-                                                                thành viên mới</label>
-                                                        </div>
-                                                        <div class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="email06" checked="">
-                                                            <label class="custom-control-label" for="email06"> Đăng ký
-                                                                thành viên</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary mr-2">Lưu</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="manage-contact" role="tabpanel">
-                                    <div class="iq-card">
-                                        <div class="iq-card-header d-flex justify-content-between">
-                                            <div class="iq-header-title">
-                                                <h4 class="card-title">Quản lý liên hệ</h4>
-                                            </div>
-                                        </div>
-                                        <div class="iq-card-body">
-                                            <form>
-                                                <div class="form-group">
-                                                    <label for="cno">Số liên lạc:</label>
-                                                    <input type="text" class="form-control" id="cno" value="09******20">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="email">Email:</label>
-                                                    <input type="text" class="form-control" id="email"
-                                                        value="email@gmail.com">
-                                                </div>
-                                                <button type="submit" class="btn btn-primary mr-2">Lưu</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+<!-- Page Content  -->
+<div id="content-page" class="content-page">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="iq-card">
+                    <div class="iq-card-body p-0">
+                        <div class="iq-edit-list">
+                            <ul class="iq-edit-profile d-flex nav nav-pills">
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link active" data-toggle="pill" href="#personal-information">
+                                        Thông tin cá nhân
+                                    </a>
+                                </li>
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link" data-toggle="pill" href="#account-info">
+                                        Tài khoản
+                                    </a>
+                                </li>
+                                <li class="col-md-4 p-0">
+                                    <a class="nav-link" data-toggle="pill" href="#manage-contact">
+                                        Quản lý liên hệ
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-12">
+                <div class="iq-edit-list-data">
+                    <div class="tab-content">
+
+                        <!-- ================= THÔNG TIN CÁ NHÂN ================= -->
+                        <div class="tab-pane fade active show" id="personal-information" role="tabpanel">
+                            <div class="iq-card">
+                                <div class="iq-card-header d-flex justify-content-between">
+                                    <div class="iq-header-title">
+                                        <h4 class="card-title">Thông tin cá nhân</h4>
+                                    </div>
+                                </div>
+                                <div class="iq-card-body">
+                                    <form>
+                                        <div class="form-group row align-items-center">
+                                            <div class="col-md-12">
+                                                <div class="profile-img-edit">
+                                                    <img class="profile-pic" src="images/user/1.jpg" alt="profile-pic">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row align-items-center">
+                                            <div class="form-group col-sm-6">
+                                                <label>Họ:</label> Đào Thiện
+                                            </div>
+                                            <div class="form-group col-sm-6">
+                                                <label>Tên:</label> Phát
+                                            </div>
+                                            <div class="form-group col-sm-6">
+                                                <label>Giới tính:</label> Nam
+                                            </div>
+                                            <div class="form-group col-sm-6">
+                                                <label>Ngày sinh:</label> 10/04/2006
+                                            </div>
+                                            <div class="form-group col-sm-6">
+                                                <label>Quốc gia:</label> Việt Nam
+                                            </div>
+                                            <div class="form-group col-sm-6">
+                                                <label>Tỉnh/Thành phố:</label> Hồ Chí Minh
+                                            </div>
+                                        </div>
+
+                                        <a href="profile-edit.php" class="btn btn-primary mr-2">Chỉnh sửa</a>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= TÀI KHOẢN ================= -->
+                        <div class="tab-pane fade" id="account-info" role="tabpanel">
+                            <div class="iq-card">
+                                <div class="iq-card-header d-flex justify-content-between">
+                                    <div class="iq-header-title">
+                                        <h4 class="card-title">Tài khoản</h4>
+                                    </div>
+                                </div>
+                                <div class="iq-card-body">
+                                    <form>
+                                        <div class="row">
+                                            <div class="form-group col-sm-6">
+                                                <label>Tên tài khoản</label>
+                                                <input type="text" class="form-control" value="PhatTB" readonly>
+                                            </div>
+
+                                            <div class="form-group col-sm-6">
+                                                <label>Gmail</label>
+                                                <input type="email" class="form-control" value="email@gmail.com"
+                                                    readonly>
+                                            </div>
+
+                                            <div class="form-group col-sm-6">
+                                                <label>Mật khẩu</label>
+                                                <input type="password" class="form-control" value="********" readonly>
+                                            </div>
+                                        </div>
+
+                                        <a href="account-edit.php" class="btn btn-primary mr-2">Sửa</a>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= QUẢN LÝ LIÊN HỆ ================= -->
+                        <div class="tab-pane fade" id="manage-contact" role="tabpanel">
+                            <div class="iq-card">
+                                <div class="iq-card-header">
+                                    <h4 class="card-title">Quản lý liên hệ</h4>
+                                </div>
+                                <div class="iq-card-body">
+                                    <form>
+
+                                        <!-- SĐT -->
+                                        <div class="form-group">
+                                            <label>Số điện thoại</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" value="09******20" readonly>
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-primary">Sửa</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Địa chỉ -->
+                                        <div class="form-group">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <label>Các địa chỉ đang có</label>
+                                                <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
+                                                    data-target="#addAddressModal">
+                                                    Thêm địa chỉ
+                                                </button>
+                                            </div>
+
+                                            <div class="list-group">
+
+                                                <div class="list-group-item d-flex justify-content-between">
+                                                    <div>
+                                                        <strong>Địa chỉ 1</strong><br>
+                                                        10/41A Âu Dương Lân, Quận 8, Hồ Chí Minh
+                                                    </div>
+                                                    <div>
+                                                        <button class="btn btn-sm btn-primary" data-toggle="modal"
+                                                            data-target="#editAddressModal">
+                                                            Sửa
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger">Xóa</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="list-group-item d-flex justify-content-between">
+                                                    <div>
+                                                        <strong>Địa chỉ 2</strong><br>
+                                                        123 Nguyễn Văn Cừ, Quận 5, Hồ Chí Minh
+                                                    </div>
+                                                    <div>
+                                                        <button class="btn btn-sm btn-primary" data-toggle="modal"
+                                                            data-target="#editAddressModal">
+                                                            Sửa
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger">Xóa</button>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
+</div>
+<!-- Modal thêm địa chỉ -->
+<div class="modal fade" id="addAddressModal" tabindex="-1" role="dialog" aria-labelledby="addAddressModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAddressModalLabel">Thêm địa chỉ mới</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>Họ và tên người nhận</label>
+                            <input type="text" class="form-control" placeholder="Nhập họ tên">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label>Số điện thoại</label>
+                            <input type="text" class="form-control" placeholder="Nhập số điện thoại">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Tỉnh/Thành phố</label>
+                            <input type="text" class="form-control" placeholder="Nhập tỉnh/thành phố">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Quận/Huyện</label>
+                            <input type="text" class="form-control" placeholder="Nhập quận/huyện">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Phường/Xã</label>
+                            <input type="text" class="form-control" placeholder="Nhập phường/xã">
+                        </div>
+
+                        <div class="form-group col-md-12">
+                            <label>Địa chỉ cụ thể</label>
+                            <textarea class="form-control" rows="3"
+                                placeholder="Số nhà, tên đường, tòa nhà..."></textarea>
+                        </div>
+
+                        <div class="form-group col-md-12">
+                            <label>Ghi chú</label>
+                            <textarea class="form-control" rows="2" placeholder="Ví dụ: Giao giờ hành chính"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Lưu địa chỉ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa địa chỉ -->
+<div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAddressModalLabel">Sửa địa chỉ</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>Họ và tên người nhận</label>
+                            <input type="text" class="form-control" value="Đào Thiện Phát">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label>Số điện thoại</label>
+                            <input type="text" class="form-control" value="09******20">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Tỉnh/Thành phố</label>
+                            <input type="text" class="form-control" value="Hồ Chí Minh">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Quận/Huyện</label>
+                            <input type="text" class="form-control" value="Quận 8">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Phường/Xã</label>
+                            <input type="text" class="form-control" value="Phường 5">
+                        </div>
+
+                        <div class="form-group col-md-12">
+                            <label>Địa chỉ cụ thể</label>
+                            <textarea class="form-control" rows="3">10/41A Âu Dương Lân, Quận 8, Hồ Chí Minh</textarea>
+                        </div>
+
+                        <div class="form-group col-md-12">
+                            <label>Ghi chú</label>
+                            <textarea class="form-control" rows="2">Giao giờ hành chính</textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Cập nhật</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php include "includes/footer.php"; ?>
