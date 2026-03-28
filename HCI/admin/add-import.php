@@ -1,73 +1,91 @@
-<?php include "includes/header.php"; ?>
+<?php
+$page_title = 'Thêm phiếu nhập';
+require_once __DIR__ . '/includes/bootstrap.php';
+require_admin();
 
-<?php include "includes/sidebar.php"; ?>
+$books = fetch_all("SELECT b.id, b.book_code, b.bookname, a.fullname AS author_name FROM books b LEFT JOIN authors a ON a.id = b.author_id ORDER BY b.bookname");
 
-         <!-- Page Content  -->
-         <div id="content-page" class="content-page">
-            <div class="container-fluid">
-               <div class="row">
-                  <div class="col-sm-12">
-                     <div class="iq-card">
-                        <div class="iq-card-header d-flex justify-content-between">
-                           <h4 class="card-title mb-0">Thêm Phiếu Nhập Hàng</h4>
-                        </div>
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $date = $_POST['date'] ?? date('Y-m-d');
+    $note = trim($_POST['note'] ?? '');
+    $bookIds = $_POST['book_id'] ?? [];
+    $qtys = $_POST['quantity'] ?? [];
+    $prices = $_POST['import_price'] ?? [];
 
-                        <div class="iq-card-body">
-                           <form action="import.php">
-                            <div class="form-group">
-                                    <label>Mã phiếu</label>
-                                    <p>PN011</p>
-                                 </div>
-                              <div class="form-group">
-                                 <label>Ngày nhập:</label>
-                                 <input type="date" class="form-control" required>
-                              </div>
-                              <div class="form-group">
-                                    <label>Tên sách:</label>
-                                    <input type="text" class="form-control" placeholder="Nhập tên sách" required>
-                                 </div>
-                              <div class="form-group">
-                                 <label>Chọn sách:</label>
-                                 <select class="form-control" id="exampleFormControlSelect1">
-                                    <option selected="" disabled="">Loại sách</option>
-                                    <option>General Books</option>
-                                    <option>History Books</option>
-                                    <option>Horror Story</option>
-                                    <option>Arts Books</option>
-                                    <option>Film & Photography</option>
-                                    <option>Business & Economics</option>
-                                    <option>Comics & Mangas</option>
-                                    <option>Computers & Internet</option>
-                                    <option> Sports</option>
-                                    <option> Travel & Tourism</option>
-                                 </select>
-                              </div>
+    mysqli_begin_transaction(db());
+    try {
+        $stmt = mysqli_prepare(db(), 'INSERT INTO imports (`date`, status, note, total_amount) VALUES (?, ?, ?, 0)');
+        $status = 'draft';
+        mysqli_stmt_bind_param($stmt, 'sss', $date, $status, $note);
+        mysqli_stmt_execute($stmt);
+        $importId = mysqli_insert_id(db());
+        mysqli_stmt_close($stmt);
 
-                              <div class="form-row">
-                                 <div class="form-group col-md-6">
-                                    <label>Giá nhập (₫):</label>
-                                    <input type="number" class="form-control" placeholder="Nhập giá nhập" required>
-                                 </div>
-                                 <div class="form-group col-md-6">
-                                    <label>Số lượng:</label>
-                                    <input type="number" class="form-control" placeholder="Nhập số lượng" required>
-                                 </div>
-                              </div>
+        $total = 0.0;
+        $stmt = mysqli_prepare(db(), 'INSERT INTO import_items (import_id, book_id, import_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?)');
+        foreach ($bookIds as $i => $bookIdRaw) {
+            $bookId = (int) $bookIdRaw;
+            $qty = (int) ($qtys[$i] ?? 0);
+            $price = (float) ($prices[$i] ?? 0);
+            if ($bookId <= 0 || $qty <= 0) {
+                continue;
+            }
+            $subtotal = $qty * $price;
+            $total += $subtotal;
+            mysqli_stmt_bind_param($stmt, 'iidid', $importId, $bookId, $price, $qty, $subtotal);
+            mysqli_stmt_execute($stmt);
+        }
+        mysqli_stmt_close($stmt);
 
-                              <div class="form-group">
-                                 <label>Ghi chú:</label>
-                                 <textarea class="form-control" rows="3" placeholder="Ghi chú thêm (nếu có)..."></textarea>
-                              </div>
+        if ($total <= 0) {
+            throw new Exception('Vui lòng thêm ít nhất một sản phẩm nhập hàng.');
+        }
+        $stmt = mysqli_prepare(db(), 'UPDATE imports SET total_amount = ? WHERE id = ?');
+        mysqli_stmt_bind_param($stmt, 'di', $total, $importId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
 
-                              <button type="submit" class="btn btn-primary">Lưu phiếu nhập</button>
-                              <button type="reset" class="btn btn-danger">Hủy</button>
-                           </form>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
+        mysqli_commit(db());
+        flash('success', 'Đã tạo phiếu nhập nháp.');
+        redirect('fix-import.php?id=' . $importId);
+    } catch (Throwable $e) {
+        mysqli_rollback(db());
+        flash('danger', $e->getMessage());
+        redirect('add-import.php');
+    }
+}
+
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/sidebar.php';
+?>
+<div id="content-page" class="content-page"><div class="container-fluid"><div class="iq-card"><div class="iq-card-header"><h4 class="card-title mb-0">Thêm phiếu nhập</h4></div><div class="iq-card-body">
+<form method="post">
+   <div class="row">
+      <div class="col-md-4 form-group"><label>Ngày nhập</label><input type="date" name="date" class="form-control" value="<?php echo h(date('Y-m-d')); ?>" required></div>
+      <div class="col-md-8 form-group"><label>Ghi chú</label><input name="note" class="form-control"></div>
+   </div>
+   <div id="importRows">
+      <div class="row import-row">
+         <div class="col-md-5 form-group"><label>Sách</label><select name="book_id[]" class="form-control" required><option value="">-- Chọn --</option><?php foreach ($books as $b): ?><option value="<?php echo (int) $b['id']; ?>"><?php echo h($b['book_code'] . ' - ' . $b['bookname'] . ' (' . $b['author_name'] . ')'); ?></option><?php endforeach; ?></select></div>
+         <div class="col-md-3 form-group"><label>Số lượng</label><input type="number" min="1" step="1" name="quantity[]" class="form-control" required></div>
+         <div class="col-md-4 form-group"><label>Giá nhập</label><input type="number" min="0" step="0.01" name="import_price[]" class="form-control" required></div>
       </div>
-
-<?php include "includes/footer.php"; ?>
+   </div>
+   <button type="button" class="btn btn-outline-secondary mb-3" id="addRow">Thêm dòng</button>
+   <div><button class="btn btn-primary">Lưu nháp</button> <a href="import.php" class="btn btn-secondary">Quay lại</a></div>
+</form>
+<script>
+(function(){
+  const btn = document.getElementById('addRow');
+  const rows = document.getElementById('importRows');
+  btn.addEventListener('click', function(){
+    const first = rows.querySelector('.import-row');
+    const clone = first.cloneNode(true);
+    clone.querySelectorAll('input').forEach(i => i.value = '');
+    clone.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    rows.appendChild(clone);
+  });
+})();
+</script>
+</div></div></div></div></div>
+<?php include __DIR__ . '/includes/footer.php'; ?>

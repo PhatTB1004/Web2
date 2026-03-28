@@ -1,230 +1,43 @@
-<?php include "includes/header.php"; ?>
+<?php
+$page_title = 'Nhập hàng';
+require_once __DIR__ . '/includes/bootstrap.php';
+require_admin();
 
-<?php include "includes/sidebar.php"; ?>
+if (!empty($_GET['complete'])) {
+    $id = (int) $_GET['complete'];
+    if (complete_import($id)) {
+        flash('success', 'Đã hoàn thành phiếu nhập.');
+    }
+    redirect('import.php');
+}
 
-        <!-- Page Content  -->
+$from = $_GET['from'] ?? '';
+$to = $_GET['to'] ?? '';
+$status = trim($_GET['status'] ?? '');
+$where = '1=1';
+if ($from !== '') {
+    $where .= " AND `date` >= '" . mysqli_real_escape_string(db(), $from) . "'";
+}
+if ($to !== '') {
+    $where .= " AND `date` <= '" . mysqli_real_escape_string(db(), $to) . "'";
+}
+if ($status !== '') {
+    $where .= " AND status = '" . mysqli_real_escape_string(db(), $status) . "'";
+}
+$rows = fetch_all("SELECT * FROM imports WHERE {$where} ORDER BY `date` DESC, id DESC");
 
-        <div id="content-page" class="content-page">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="iq-card">
-                            <div class="iq-card-header d-flex justify-content-between">
-                                <div class="iq-header-title">
-                                    <h4 class="card-title">Nhập sách</h4>
-                                </div>
-                                <div class="iq-card-header-toolbar d-flex align-items-center">
-                                    <form class="form-inline my-2 my-lg-0">
-                                        <input class="form-control mr-sm-2" type="search"
-                                            placeholder="Tìm phiếu nhập..." aria-label="Search">
-                                        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Tìm</button>
-                                    </form>
-                                    <a href="add-import.php" class="btn btn-primary ml-2">Thêm phiếu nhập</a>
-                                </div>
-                            </div>
-                            <div class="iq-card-body">
-                                <div class="table-responsive">
-                                    <table class="data-tables table table-striped table-bordered" style="width:100%">
-                                        <thead>
-                                            <tr>
-                                                <th width="5%">STT</th>
-                                                <th width="10%">Mã phiếu</th>
-                                                <th width="15%">Ngày nhập</th>
-                                                <th width="15%">Số lượng</th>
-                                                <th width="20%">Tổng tiền</th>
-                                                <th width="15%">Trạng thái</th>
-                                                <th width="20%">Hoạt động</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td>PN001</td>
-                                                <td>2025-11-03</td>
-                                                <td>5</td>
-                                                <td>2.500.000 đ</td>
-                                                <td><span class="badge badge-warning">Chưa hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-primary" title="Sửa"
-                                                            href="fix-import.php"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-primary" title="Hoàn thành" href="#"><i
-                                                                class="ri-check-line"></i></a>
-                                                        <a class="bg-primary" title="Xoá" href="#"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td>PN002</td>
-                                                <td>2025-11-02</td>
-                                                <td>3</td>
-                                                <td>1.800.000 đ</td>
-                                                <td><span class="badge badge-success">Đã hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-check-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>3</td>
-                                                <td>PN003</td>
-                                                <td>2025-11-01</td>
-                                                <td>4</td>
-                                                <td>2.200.000 đ</td>
-                                                <td><span class="badge badge-warning">Chưa hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-primary" title="Sửa"
-                                                            href="fix-import.php"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-primary" title="Hoàn thành" href="#"><i
-                                                                class="ri-check-line"></i></a>
-                                                        <a class="bg-primary" title="Xoá" href="#"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>4</td>
-                                                <td>PN004</td>
-                                                <td>2025-10-29</td>
-                                                <td>6</td>
-                                                <td>3.100.000 đ</td>
-                                                <td><span class="badge badge-success">Đã hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-check-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>5</td>
-                                                <td>PN005</td>
-                                                <td>2025-10-28</td>
-                                                <td>2</td>
-                                                <td>900.000 đ</td>
-                                                <td><span class="badge badge-warning">Chưa hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-primary" href="fix-import.php"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-primary" href="#"><i class="ri-check-line"></i></a>
-                                                        <a class="bg-primary" href="#"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>6</td>
-                                                <td>PN006</td>
-                                                <td>2025-10-25</td>
-                                                <td>7</td>
-                                                <td>3.800.000 đ</td>
-                                                <td><span class="badge badge-success">Đã hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-check-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>7</td>
-                                                <td>PN007</td>
-                                                <td>2025-10-20</td>
-                                                <td>8</td>
-                                                <td>4.500.000 đ</td>
-                                                <td><span class="badge badge-warning">Chưa hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-primary" href="fix-import.php"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-primary" href="#"><i class="ri-check-line"></i></a>
-                                                        <a class="bg-primary" href="#"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>8</td>
-                                                <td>PN008</td>
-                                                <td>2025-10-15</td>
-                                                <td>10</td>
-                                                <td>5.200.000 đ</td>
-                                                <td><span class="badge badge-success">Đã hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-check-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>9</td>
-                                                <td>PN009</td>
-                                                <td>2025-10-10</td>
-                                                <td>4</td>
-                                                <td>1.700.000 đ</td>
-                                                <td><span class="badge badge-warning">Chưa hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-primary" href="fix-import.php"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-primary" href="#"><i class="ri-check-line"></i></a>
-                                                        <a class="bg-primary" href="#"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>10</td>
-                                                <td>PN010</td>
-                                                <td>2025-10-05</td>
-                                                <td>9</td>
-                                                <td>4.800.000 đ</td>
-                                                <td><span class="badge badge-success">Đã hoàn thành</span></td>
-                                                <td>
-                                                    <div class="flex align-items-center list-user-action">
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-pencil-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-check-line"></i></a>
-                                                        <a class="bg-secondary disabled"><i
-                                                                class="ri-delete-bin-line"></i></a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<?php include "includes/footer.php"; ?>
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/sidebar.php';
+?>
+<div id="content-page" class="content-page"><div class="container-fluid">
+   <div class="iq-card mb-4"><div class="iq-card-header d-flex justify-content-between align-items-center"><h4 class="card-title mb-0">Phiếu nhập</h4><a class="btn btn-primary" href="add-import.php">Tạo phiếu nhập</a></div>
+      <div class="iq-card-body"><form class="row">
+         <div class="col-md-3 form-group"><label>Từ ngày</label><input type="date" name="from" class="form-control" value="<?php echo h($from); ?>"></div>
+         <div class="col-md-3 form-group"><label>Đến ngày</label><input type="date" name="to" class="form-control" value="<?php echo h($to); ?>"></div>
+         <div class="col-md-3 form-group"><label>Trạng thái</label><select name="status" class="form-control"><option value="">Tất cả</option><option value="draft" <?php echo $status === 'draft' ? 'selected' : ''; ?>>draft</option><option value="completed" <?php echo $status === 'completed' ? 'selected' : ''; ?>>completed</option></select></div>
+         <div class="col-md-3 form-group align-self-end"><button class="btn btn-primary">Lọc</button></div>
+      </form></div>
+   </div>
+   <div class="iq-card"><div class="iq-card-body table-responsive"><table class="table table-striped table-bordered"><thead><tr><th>Mã</th><th>Ngày</th><th>Trạng thái</th><th>Ghi chú</th><th>Tổng tiền</th><th>Chi tiết</th><th>Thao tác</th></tr></thead><tbody><?php foreach ($rows as $row): ?><tr><td>PN<?php echo str_pad((string) $row['id'], 3, '0', STR_PAD_LEFT); ?></td><td><?php echo h($row['date']); ?></td><td><span class="<?php echo h(import_status_badge($row['status'])); ?>"><?php echo h($row['status']); ?></span></td><td><?php echo h($row['note']); ?></td><td><?php echo vn_money($row['total_amount']); ?> ₫</td><td><a class="btn btn-sm btn-primary" href="fix-import.php?id=<?php echo (int) $row['id']; ?>">Xem / Sửa</a></td><td><?php if ($row['status'] !== 'completed'): ?><a class="btn btn-sm btn-success" href="import.php?complete=<?php echo (int) $row['id']; ?>" onclick="return confirm('Hoàn thành phiếu nhập?')">Hoàn thành</a><?php else: ?>Đã hoàn thành<?php endif; ?></td></tr><?php endforeach; ?></tbody></table></div></div>
+</div></div>
+<?php include __DIR__ . '/includes/footer.php'; ?>

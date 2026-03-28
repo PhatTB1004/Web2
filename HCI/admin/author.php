@@ -1,68 +1,66 @@
-<?php include "includes/header.php"; ?>
+<?php
+$page_title = 'Tác giả';
+require_once __DIR__ . '/includes/bootstrap.php';
+require_admin();
 
-<?php include "includes/sidebar.php"; ?>
+if (!empty($_GET['delete'])) {
+    $id = (int) $_GET['delete'];
+    $count = fetch_count('SELECT COUNT(*) FROM books WHERE author_id = ' . $id);
+    if ($count > 0) {
+        flash('warning', 'Tác giả đang có sản phẩm nên không thể xoá.');
+    } else {
+        $row = fetch_one('SELECT image FROM authors WHERE id = ' . $id);
+        if ($row && !empty($row['image'])) {
+            delete_file_if_exists('../', $row['image']);
+        }
+        mysqli_query(db(), 'DELETE FROM authors WHERE id = ' . $id);
+        flash('success', 'Đã xoá tác giả.');
+    }
+    redirect('author.php');
+}
 
-<?php include "../includes/database.php"; 
-      $sql = "SELECT * FROM author";
-      $result = mysqli_query($conn,$sql);
+$rows = fetch_all('SELECT a.*, (SELECT COUNT(*) FROM books WHERE author_id = a.id) AS book_count FROM authors a ORDER BY a.id DESC');
+
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/sidebar.php';
 ?>
-
-      <!-- Page Content  -->
-      <div id="content-page" class="content-page">
-         <div class="container-fluid">
-            <div class="row">
-               <div class="col-sm-12">
-                  <div class="iq-card">
-                     <div class="iq-card-header d-flex justify-content-between">
-                        <div class="iq-header-title">
-                           <h4 class="card-title">Danh sách tác giả</h4>
-                        </div>
-                        <div class="iq-card-header-toolbar d-flex align-items-center">
-                           <a href="add-author.php" class="btn btn-primary">Thêm tác giả</a>
-                        </div>
-                     </div>
-                     <div class="iq-card-body">
-                        <div class="table-responsive">
-                           <table class="data-tables table table-striped table-bordered" style="width:100%">
-                              <thead>
-                                 <tr>
-                                    <th style="width: 5%;">STT</th>
-                                    <th style="width: 5%;">Hồ sơ</th>
-                                    <th style="width: 20%;">Tên tác giả</th>
-                                    <th style="width: 60%;">Mô tả tác giả</th>
-                                    <th style="width: 10%;">Hoạt động</th>
-                                 </tr>
-                              </thead>
-                              <tbody>
-                                 <?php $stt = 1; while($row = mysqli_fetch_assoc($result)){ ?>
-                                 <tr>
-                                    <td><?php echo $stt++; ?></td>
-                                    <td> <img src="../images/author/<?php echo $row['image']; ?>" class="img-fluid avatar-50 rounded"> </td>
-                                    <td> <?php echo $row['fullname']; ?> </td>
-                                    <td> <p class="mb-0"> <?php echo $row['info']; ?> </p> </td>
-                                    <td> 
-                                       <div class="flex align-items-center list-user-action">
-                                          <a class="bg-primary"
-                                          href="edit-author.php?id=<?php echo $row['id']; ?>">
-                                             <i class="ri-pencil-line"></i>
-                                          </a>
-                                          <a class="bg-primary"
-                                          href="delete-author.php?id=<?php echo $row['id']; ?>">
-                                             <i class="ri-delete-bin-line"></i>
-                                          </a>
-                                       </div>
-                                    </td>
-                                 </tr>
-                                 <?php } ?>
-                              </tbody>
-                           </table>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+<div id="content-page" class="content-page">
+    <div class="container-fluid">
+        <div class="iq-card">
+            <div class="iq-card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Quản lý tác giả</h4>
+                <a class="btn btn-primary" href="add-author.php">Thêm tác giả</a>
             </div>
-         </div>
-      </div>
-   </div>
-   
-<?php include "includes/footer.php"; ?>
+            <div class="iq-card-body table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Ảnh</th>
+                            <th>Họ tên</th>
+                            <th>Thông tin</th>
+                            <th>Số sản phẩm</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody><?php $stt=1; foreach ($rows as $row): ?><tr>
+                            <td><?php echo $stt++; ?></td>
+                            <td><?php if (!empty($row['image'])): ?><img
+                                    src="../<?php echo h($row['image']); ?>"
+                                    style="width:60px;height:60px;object-fit:cover;border-radius:8px;"
+                                    alt=""><?php endif; ?></td>
+                            <td><?php echo h($row['fullname']); ?></td>
+                            <td><?php echo h($row['info']); ?></td>
+                            <td><?php echo (int) $row['book_count']; ?></td>
+                            <td><a class="btn btn-sm btn-outline-primary"
+                                    href="fix-author.php?id=<?php echo (int) $row['id']; ?>">Sửa</a> <a
+                                    class="btn btn-sm btn-outline-danger" onclick="return confirm('Xoá tác giả?')"
+                                    href="author.php?delete=<?php echo (int) $row['id']; ?>">Xoá</a></td>
+                        </tr><?php endforeach; ?></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<?php include __DIR__ . '/includes/footer.php'; ?>

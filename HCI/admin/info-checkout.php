@@ -1,102 +1,81 @@
-<?php include "includes/header.php"; ?>
+<?php
+$page_title = 'Chi tiết đơn hàng';
+require_once __DIR__ . '/includes/bootstrap.php';
+require_admin();
 
-<?php include "includes/sidebar.php"; ?>
+$id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
+$order = fetch_one('SELECT o.*, u.fullname, u.phone, u.email FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ' . $id);
+if (!$order) {
+    flash('danger', 'Không tìm thấy đơn hàng.');
+    redirect('checkout.php');
+}
 
-    <!-- Page Content -->
-    <div id="content-page" class="content-page">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="iq-card">
-              <div class="iq-card-header d-flex justify-content-between align-items-center">
-                <div class="iq-header-title">
-                  <h4 class="card-title mb-0">Chi tiết đơn hàng DH001</h4>
-                </div>
-                <a href="checkout.php" class="btn btn-secondary btn-sm">← Quay lại</a>
-              </div>
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
+    if (update_order_status($id, $_POST['status'])) {
+        flash('success', 'Đã cập nhật trạng thái đơn hàng.');
+    }
+    redirect('info-checkout.php?id=' . $id);
+}
 
-              <div class="iq-card-body">
-                <!-- Thông tin chung -->
-                <div class="mb-4">
-                  <h6 class="text-primary mb-3">Thông tin đơn hàng</h6>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <p><strong>Mã đơn hàng:</strong> DH001</p>
-                      <p><strong>Khách hàng:</strong> Nguyễn Văn A</p>
-                      <p><strong>Ngày đặt:</strong> 11/11/2025</p>
-                    </div>
-                    <div class="col-md-6">
-                      <p><strong>Số điện thoại:</strong> 0901 234 567</p>
-                      <p><strong>Địa chỉ giao hàng:</strong> 123 Đường Lê Lợi, TP.HCM</p>
-                      <p><strong>Tình trạng hiện tại:</strong>
-                        <span class="badge badge-info">Mới đặt</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
+$items = fetch_all('SELECT oi.*, b.bookname, b.book_code FROM order_items oi LEFT JOIN books b ON b.id = oi.book_id WHERE oi.order_id = ' . $id);
 
-                <!-- Bảng sản phẩm -->
-                <div class="table-responsive">
-                  <table class="table table-bordered">
-                    <thead class="thead-light">
-                      <tr>
-                        <th>STT</th>
-                        <th>Tên sách</th>
-                        <th>Số lượng</th>
-                        <th>Đơn giá (₫)</th>
-                        <th>Thành tiền (₫)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>1</td>
-                        <td>Reading on the Worlds</td>
-                        <td>2</td>
-                        <td>50.000</td>
-                        <td>100.000</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>The Catcher in the Rye</td>
-                        <td>1</td>
-                        <td>99.000</td>
-                        <td>99.000</td>
-                      </tr>
-                      <tr>
-                        <td>3</td>
-                        <td>Take On The Risk</td>
-                        <td>1</td>
-                        <td>100.000</td>
-                        <td>100.000</td>
-                      </tr>
-                      <tr class="table-primary">
-                        <td colspan="4" class="text-right font-weight-bold">Tổng cộng</td>
-                        <td><strong>299.000 ₫</strong></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Cập nhật tình trạng -->
-                <form class="mt-4">
-                  <div class="form-group">
-                    <label><strong>Cập nhật tình trạng đơn hàng:</strong></label>
-                    <select class="form-control w-50">
-                      <option>Mới đặt</option>
-                      <option>Đã xử lý</option>
-                      <option>Đã giao</option>
-                      <option>Đã hủy</option>
-                    </select>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
-                </form>
-
-              </div> <!-- end card-body -->
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/sidebar.php';
+?>
+<div id="content-page" class="content-page">
+   <div class="container-fluid">
+      <div class="iq-card">
+         <div class="iq-card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title mb-0">Chi tiết đơn hàng DH<?php echo str_pad((string) $order['id'], 3, '0', STR_PAD_LEFT); ?></h4>
+            <a href="checkout.php" class="btn btn-secondary btn-sm">← Quay lại</a>
+         </div>
+         <div class="iq-card-body">
+            <div class="row mb-4">
+               <div class="col-md-6">
+                  <p><strong>Khách hàng:</strong> <?php echo h($order['fullname'] ?: $order['receiver_name']); ?></p>
+                  <p><strong>Email:</strong> <?php echo h($order['email']); ?></p>
+                  <p><strong>Số điện thoại:</strong> <?php echo h($order['phone'] ?: $order['receiver_phone']); ?></p>
+               </div>
+               <div class="col-md-6">
+                  <p><strong>Ngày đặt:</strong> <?php echo h($order['date']); ?></p>
+                  <p><strong>Địa chỉ giao hàng:</strong> <?php echo h($order['shipping_address'] . ', ' . $order['ward'] . ', ' . $order['district'] . ', ' . $order['province']); ?></p>
+                  <p><strong>Trạng thái:</strong> <span class="<?php echo h(order_status_badge($order['status'])); ?>"><?php echo h($order['status']); ?></span></p>
+               </div>
             </div>
-          </div>
-        </div>
+            <div class="table-responsive">
+               <table class="table table-bordered">
+                  <thead><tr><th>STT</th><th>Mã sách</th><th>Tên sách</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                  <tbody>
+                     <?php $stt = 1; foreach ($items as $item): ?>
+                     <tr>
+                        <td><?php echo $stt++; ?></td>
+                        <td><?php echo h($item['book_code']); ?></td>
+                        <td><?php echo h($item['bookname']); ?></td>
+                        <td><?php echo (int) $item['quantity']; ?></td>
+                        <td><?php echo vn_money($item['price']); ?> ₫</td>
+                        <td><?php echo vn_money($item['subtotal']); ?> ₫</td>
+                     </tr>
+                     <?php endforeach; ?>
+                     <tr class="table-primary"><td colspan="5" class="text-right font-weight-bold">Tổng cộng</td><td><strong><?php echo vn_money($order['price']); ?> ₫</strong></td></tr>
+                  </tbody>
+               </table>
+            </div>
+            <form method="post" class="mt-4">
+               <input type="hidden" name="id" value="<?php echo (int) $id; ?>">
+               <div class="form-group">
+                  <label><strong>Cập nhật tình trạng đơn hàng:</strong></label>
+                  <select name="status" class="form-control w-50">
+                     <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>pending</option>
+                     <option value="confirmed" <?php echo $order['status'] === 'confirmed' ? 'selected' : ''; ?>>confirmed</option>
+                     <option value="delivered" <?php echo $order['status'] === 'delivered' ? 'selected' : ''; ?>>delivered</option>
+                     <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>cancelled</option>
+                  </select>
+               </div>
+               <button class="btn btn-primary">Lưu thay đổi</button>
+            </form>
+         </div>
       </div>
-    </div>
-  </div>
-
-<?php include "includes/footer.php"; ?>
+   </div>
+</div>
+</div>
+<?php include __DIR__ . '/includes/footer.php'; ?>

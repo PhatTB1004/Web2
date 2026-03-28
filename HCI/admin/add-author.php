@@ -1,48 +1,29 @@
-<?php include "includes/header.php"; ?>
+<?php
+$page_title = 'Thêm tác giả';
+require_once __DIR__ . '/includes/bootstrap.php';
+require_admin();
 
-<?php include "includes/sidebar.php"; ?>
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $fullname = trim($_POST['fullname'] ?? '');
+    $info = trim($_POST['info'] ?? '');
+    $image = '';
+    if (!empty($_FILES['image']['name'])) {
+        $image = upload_file('image', 'images/authors', null) ?? '';
+    }
+    if ($fullname === '') {
+        flash('danger', 'Tên tác giả không được để trống.');
+        redirect('add-author.php');
+    }
+    $stmt = mysqli_prepare(db(), 'INSERT INTO authors (image, fullname, info) VALUES (?, ?, ?)');
+    mysqli_stmt_bind_param($stmt, 'sss', $image, $fullname, $info);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+    flash('success', 'Đã thêm tác giả.');
+    redirect('author.php');
+}
 
-      <!-- Page Content  -->
-      <div id="content-page" class="content-page">
-         <div class="container-fluid">
-            <div class="row">
-               <div class="col-sm-12">
-                  <div class="iq-card">
-                     <div class="iq-card-header d-flex justify-content-between">
-                        <div class="iq-header-title">
-                           <h4 class="card-title">Thêm tác giả</h4>
-                        </div>
-                     </div>
-                     <div class="iq-card-body">
-                        <form action="author.php">
-                           <div class="form-group">
-                              <label>Tên tác giả:</label>
-                              <input type="text" class="form-control">
-                           </div>
-                           <div class="form-group">
-                              <label>Hồ sơ tác giả:</label>
-                              <div class="custom-file">
-                                 <input type="file" class="custom-file-input" id="customFile">
-                                 <label class="custom-file-label" for="customFile">Chọn tập tin</label>
-                              </div>
-                           </div>
-                           <div class="form-group">
-                              <label>Email tác giả:</label>
-                              <input type="email" class="form-control">
-                           </div>
-                           <div class="form-group">
-                              <label>Nội dung:</label>
-                              <textarea class="form-control" rows="4"></textarea>
-                           </div>
-                           <button type="submit" class="btn btn-primary">Gửi</button>
-                           <button type="reset" class="btn btn-danger">Trở lại</button>
-                        </form>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
-   </div>
-
-<?php include "includes/footer.php"; ?>
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/sidebar.php';
+?>
+<div id="content-page" class="content-page"><div class="container-fluid"><div class="iq-card"><div class="iq-card-header"><h4 class="card-title mb-0">Thêm tác giả</h4></div><div class="iq-card-body"><form method="post" enctype="multipart/form-data"><div class="form-group"><label>Họ tên</label><input name="fullname" class="form-control" required></div><div class="form-group"><label>Ảnh</label><input type="file" name="image" class="form-control-file" accept="image/*"></div><div class="form-group"><label>Thông tin</label><textarea name="info" rows="4" class="form-control"></textarea></div><button class="btn btn-primary">Lưu</button> <a href="author.php" class="btn btn-secondary">Quay lại</a></form></div></div></div></div></div>
+<?php include __DIR__ . '/includes/footer.php'; ?>
