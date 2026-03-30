@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stockQuantity = (int) ($_POST['stock_quantity'] ?? 0);
     $status = $_POST['status'] ?? 'visible';
     $categoryIds = $_POST['category_ids'] ?? [];
-    $image = upload_file('image', 'images/books', null) ?? '';
+    $image = upload_file('image', '../images/books', null) ?? '';
     $sellPrice = calc_sale_price($costPrice, $profitPercent);
 
     if ($bookname === '' || $authorId <= 0) {
@@ -39,5 +39,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page"><div class="container-fluid"><div class="iq-card"><div class="iq-card-header"><h4 class="card-title mb-0">Thêm sản phẩm</h4></div><div class="iq-card-body"><form method="post" enctype="multipart/form-data"><div class="row"><div class="col-md-4 form-group"><label>Mã sách</label><input name="book_code" class="form-control" value="<?php echo h(next_code('books','BK','book_code',3)); ?>"></div><div class="col-md-8 form-group"><label>Tên sách</label><input name="bookname" class="form-control" required></div><div class="col-md-6 form-group"><label>Tác giả</label><select name="author_id" class="form-control" required><option value="">-- Chọn --</option><?php foreach ($authors as $a): ?><option value="<?php echo (int) $a['id']; ?>"><?php echo h($a['fullname']); ?></option><?php endforeach; ?></select></div><div class="col-md-6 form-group"><label>Ảnh</label><input type="file" name="image" class="form-control-file" accept="image/*"></div><div class="col-md-12 form-group"><label>Phân loại</label><select name="category_ids[]" class="form-control" multiple required><?php foreach ($categories as $cat): ?><option value="<?php echo (int) $cat['id']; ?>"><?php echo h($cat['name']); ?></option><?php endforeach; ?></select><small class="text-muted">Giữ Ctrl để chọn nhiều phân loại.</small></div><div class="col-md-12 form-group"><label>Mô tả</label><textarea name="info" rows="4" class="form-control"></textarea></div><div class="col-md-3 form-group"><label>Giá vốn</label><input type="number" step="0.01" min="0" name="cost_price" class="form-control" value="0"></div><div class="col-md-3 form-group"><label>% lợi nhuận</label><input type="number" step="0.01" min="0" name="profit_percent" class="form-control" value="20"></div><div class="col-md-3 form-group"><label>Số lượng tồn đầu</label><input type="number" step="1" min="0" name="stock_quantity" class="form-control" value="0"></div><div class="col-md-3 form-group"><label>Hiện trạng</label><select name="status" class="form-control"><option value="visible">visible</option><option value="hidden">hidden</option></select></div></div><button class="btn btn-primary">Lưu</button> <a href="books.php" class="btn btn-secondary">Quay lại</a></form></div></div></div></div></div>
+<div id="content-page" class="content-page">
+    <div class="container-fluid">
+        <div class="iq-card">
+            <div class="iq-card-header">
+                <h4 class="card-title mb-0">Thêm sản phẩm</h4>
+            </div>
+            <div class="iq-card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-4 form-group"><label>Mã sách</label><input name="book_code"
+                                class="form-control" value="<?php echo h(next_code('books','BK','book_code',3)); ?>">
+                        </div>
+                        <div class="col-md-8 form-group"><label>Tên sách</label><input name="bookname"
+                                class="form-control" required></div>
+                        <div class="col-md-6 form-group"><label>Tác giả</label><select name="author_id"
+                                class="form-control" required>
+                                <option value="">-- Chọn --</option><?php foreach ($authors as $a): ?><option
+                                    value="<?php echo (int) $a['id']; ?>"><?php echo h($a['fullname']); ?></option>
+                                <?php endforeach; ?>
+                            </select></div>
+                        <div class="col-md-6 form-group"><label>Ảnh</label><input type="file" name="image"
+                                class="form-control-file" accept="image/*"></div>
+                        <div class="col-md-12 form-group"><label>Phân loại</label><select name="category_ids[]"
+                                class="form-control" multiple required><?php foreach ($categories as $cat): ?><option
+                                    value="<?php echo (int) $cat['id']; ?>"><?php echo h($cat['name']); ?></option>
+                                <?php endforeach; ?></select><small class="text-muted">Giữ Ctrl để chọn nhiều phân
+                                loại.</small></div>
+                        <div class="col-md-12 form-group"><label>Mô tả</label><textarea name="info" rows="4"
+                                class="form-control"></textarea></div>
+                        <div class="col-md-3 form-group"><label>Giá vốn</label><input type="number" step="0.01" min="0"
+                                name="cost_price" class="form-control" value="0"></div>
+                        <div class="col-md-3 form-group"><label>% lợi nhuận</label><input type="number" step="0.01"
+                                min="0" name="profit_percent" class="form-control" value="20"></div>
+                        <div class="col-md-3 form-group"><label>Số lượng tồn đầu</label><input type="number" step="1"
+                                min="0" name="stock_quantity" class="form-control" value="0"></div>
+                        <div class="col-md-3 form-group"><label>Hiện trạng</label><select name="status"
+                                class="form-control">
+                                <option value="visible">visible</option>
+                                <option value="hidden">hidden</option>
+                            </select></div>
+                    </div><button class="btn btn-primary">Lưu</button> <a href="books.php"
+                        class="btn btn-secondary">Quay lại</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 <?php include __DIR__ . '/includes/footer.php'; ?>
