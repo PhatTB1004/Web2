@@ -1,138 +1,163 @@
-<?php include "includes/header.php"; ?>
 
-<?php include "includes/sidebar.php"; ?>
+<?php
+require_once __DIR__ . '/includes/bootstrap.php';
+$page_title = 'Xem lại đơn hàng';
+require_login('sign-in.php');
+$user = current_user($conn);
+$bookId = (int) ($_SESSION['checkout_book_id'] ?? 0);
+$userId = (int) $user['id'];
+$book = null;
+$address = null;
+$error = '';
 
-<?php include "includes/topnav.php"; ?>
+if ($bookId > 0) {
+    $stmt = mysqli_prepare($conn, 'SELECT b.*, a.fullname AS author_name FROM books b INNER JOIN authors a ON a.id = b.author_id WHERE b.id = ? LIMIT 1');
+    mysqli_stmt_bind_param($stmt, 'i', $bookId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $book = $result ? mysqli_fetch_assoc($result) : null;
+    mysqli_stmt_close($stmt);
+}
 
-<?php include "includes/database.php"; ?>
+$stmt = mysqli_prepare($conn, 'SELECT * FROM address WHERE user_id = ? ORDER BY is_default DESC, id DESC LIMIT 1');
+mysqli_stmt_bind_param($stmt, 'i', $userId);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$address = $result ? mysqli_fetch_assoc($result) : null;
+mysqli_stmt_close($stmt);
 
-      <!-- Content -->
-      <div id="content-page" class="content-page">
-         <div class="container-fluid">
-            <div class="row">
-               <div class="col-12">
-                  <div class="iq-card">
-                     <div class="iq-card-header d-flex justify-content-between">
-                        <div class="iq-header-title"><h4 class="card-title">Xem lại đơn đặt hàng</h4></div>
-                     </div>
+if (!$book) {
+    $error = 'Chưa chọn sách để thanh toán.';
+}
+if (!$address) {
+    $error = 'Chưa có địa chỉ giao hàng.';
+}
 
-                     <div class="iq-card-body">
-                        <!-- Thông tin đơn hàng -->
-                        <div class="row">
-                           <div class="col-lg-8">
-                              <div class="card mb-3">
-                                 <div class="card-body">
-                                    <h5 class="mb-3">Sản phẩm</h5>
-                                    <div class="table-responsive">
-                                       <table class="table table-bordered mb-0">
-                                          <thead class="thead-light">
-                                             <tr>
-                                                <th>#</th>
-                                                <th>Sản phẩm</th>
-                                                <th>Số lượng</th>
-                                                <th>Đơn giá</th>
-                                                <th>Thành tiền</th>
-                                             </tr>
-                                          </thead>
-                                          <tbody>
-                                             <tr>
-                                                <td>1</td>
-                                                <td>Economix - Các Nền Kinh Tế Vận Hành</td>
-                                                <td>1</td>
-                                                <td>99.900 ₫</td>
-                                                <td>99.900 ₫</td>
-                                             </tr>
-                                             <tr>
-                                                <td>2</td>
-                                                <td>Người Bán Hàng Vĩ Đại Nhất Thế Giới</td>
-                                                <td>1</td>
-                                                <td>92.900 ₫</td>
-                                                <td>92.900 ₫</td>
-                                             </tr>
-                                             <tr>
-                                                <td>3</td>
-                                                <td>Một Đời Quản Trị</td>
-                                                <td>1</td>
-                                                <td>136.900 ₫</td>
-                                                <td>136.900 ₫</td>
-                                             </tr>
-                                          </tbody>
-                                       </table>
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error) {
+    $paymentMethod = $_POST['payment_method'] ?? 'Tiền mặt';
+    $quantity = 1;
+    $subtotal = (float) $book['sell_price'] * $quantity;
+    mysqli_begin_transaction($conn);
+    try {
+        $stmt = mysqli_prepare($conn, 'SELECT stock_quantity FROM books WHERE id = ? FOR UPDATE');
+        mysqli_stmt_bind_param($stmt, 'i', $bookId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $stockRow = $result ? mysqli_fetch_assoc($result) : null;
+        $stock = (int) ($stockRow['stock_quantity'] ?? 0);
+        mysqli_stmt_close($stmt);
+        if ($stock < $quantity) {
+            throw new RuntimeException('Không đủ tồn kho.');
+        }
+
+        $stmt = mysqli_prepare($conn, 'INSERT INTO orders (user_id, date, price, status, receiver_name, receiver_phone, shipping_address, ward, district, province, payment_method) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $status = 'completed';
+        $receiverName = $address['receiver_name'];
+        $receiverPhone = $address['phone'];
+        $shippingAddress = $address['address_detail'];
+        $ward = $address['ward'];
+        $district = $address['district'];
+        $province = $address['province'];
+        mysqli_stmt_bind_param($stmt, 'idssssssss', $userId, $subtotal, $status, $receiverName, $receiverPhone, $shippingAddress, $ward, $district, $province, $paymentMethod);
+        mysqli_stmt_execute($stmt);
+        $orderId = mysqli_insert_id($conn);
+        mysqli_stmt_close($stmt);
+
+        $stmt = mysqli_prepare($conn, 'INSERT INTO order_items (order_id, book_id, price, quantity, subtotal) VALUES (?, ?, ?, ?, ?)');
+        $unitPrice = (float) $book['sell_price'];
+        mysqli_stmt_bind_param($stmt, 'iidid', $orderId, $bookId, $unitPrice, $quantity, $subtotal);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+
+        $stmt = mysqli_prepare($conn, 'UPDATE books SET stock_quantity = stock_quantity - ? WHERE id = ?');
+        mysqli_stmt_bind_param($stmt, 'ii', $quantity, $bookId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+
+        mysqli_commit($conn);
+        $_SESSION['last_order_id'] = $orderId;
+        unset($_SESSION['checkout_book_id'], $_SESSION['checkout_address_saved']);
+        header('Location: Checkout-success.php');
+        exit;
+    } catch (Throwable $e) {
+        mysqli_rollback($conn);
+        $error = 'Không thể tạo đơn hàng.';
+    }
+}
+
+include 'includes/header.php';
+include 'includes/sidebar.php';
+include 'includes/topnav.php';
+?>
+
+<div id="content-page" class="content-page">
+   <div class="container-fluid">
+      <div class="row">
+         <div class="col-12">
+            <div class="iq-card">
+               <div class="iq-card-header d-flex justify-content-between">
+                  <div class="iq-header-title"><h4 class="card-title">Xem lại đơn đặt hàng</h4></div>
+               </div>
+               <div class="iq-card-body">
+                  <?php if ($error): ?>
+                     <div class="alert alert-danger"><?= h($error) ?></div>
+                     <a href="search.php" class="btn btn-primary">Quay lại mua sắm</a>
+                  <?php else: ?>
+                     <div class="row">
+                        <div class="col-lg-8">
+                           <div class="card mb-3">
+                              <div class="card-body">
+                                 <h5 class="mb-3">Sản phẩm</h5>
+                                 <div class="media align-items-center">
+                                    <img src="<?= book_cover_url($book) ?>" class="img-fluid rounded mr-3" style="width:90px;height:auto" alt="<?= h($book['bookname']) ?>">
+                                    <div class="media-body">
+                                       <h6 class="mb-1"><?= h($book['bookname']) ?></h6>
+                                       <p class="mb-1 text-muted"><?= h($book['author_name']) ?></p>
+                                       <p class="mb-0">Số lượng: 1</p>
                                     </div>
+                                    <div class="text-right"><strong><?= h(money_vn($book['sell_price'])) ?></strong></div>
                                  </div>
                               </div>
-
-                              <!-- Địa chỉ & Thanh toán -->
-                              <div class="card">
-                                 <div class="card-body">
-                                    <div class="row">
-                                       <div class="col-md-6">
-                                          <h6>Thông tin nhận hàng</h6>
-                                          <p class="mb-1"><strong>Người nhận:</strong> User</p>
-                                          <p class="mb-1"><strong>SĐT:</strong> (+84) 09******10</p>
-                                          <p class="mb-0"><strong>Địa chỉ:</strong> 10/41A Âu Dương Lân, Quận 8, TP. HCM</p>
-                                       </div>
-                                       <div class="col-md-6">
-                                          <h6>Phương thức thanh toán</h6>
-                                          <p class="mb-1"><strong>Thanh toán:</strong> Tiền mặt khi nhận hàng</p>
-                                          <p class="mb-0"><strong>Ghi chú:</strong> </p>
-                                       </div>
-                                    </div>
-                                 </div>
-                              </div>
-
                            </div>
-
-                           <!-- Tóm tắt bên phải -->
-                           <div class="col-lg-4">
-                              <div class="iq-card">
-                                 <div class="iq-card-body">
-                                    <h5>Chi tiết đơn hàng</h5>
-                                    <div class="d-flex justify-content-between mt-2">
-                                       <span>Tạm tính</span><span>329.700 ₫</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-2">
-                                       <span>Giảm giá</span><span class="text-success">-19.900 ₫</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-2">
-                                       <span>Thuế VAT</span><span>16.900 ₫</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-2">
-                                       <span>Phí vận chuyển</span><span class="text-success">Miễn phí</span>
-                                    </div>
-                                    <hr>
-                                    <div class="d-flex justify-content-between">
-                                       <span class="font-weight-bold">Tổng</span>
-                                       <span class="font-weight-bold text-danger">327.900 ₫</span>
-                                    </div>
-
-                                    <div class="mt-4">
-                                       <!-- nút: quay lại hoặc xác nhận -->
-                                       <a href="index.php" class="btn btn-secondary btn-block mb-2">Tiếp tục mua sắm</a>
-                                       <a href="Checkout-success.php" class="btn btn-primary btn-block">Xác nhận đặt hàng</a>
-                                    </div>
-                                 </div>
-                              </div>
-
-                              <!-- Thông tin chính sách -->
-                              <div class="iq-card mt-3">
-                                 <div class="card-body">
-                                    <ul class="pl-0 mb-0">
-                                       <li class="mb-2">Chính sách thanh toán và bảo mật</li>
-                                       <li class="mb-2">Chính sách giao hàng</li>
-                                       <li>Chính sách hoàn trả</li>
-                                    </ul>
-                                 </div>
+                           <div class="card">
+                              <div class="card-body">
+                                 <h5 class="mb-3">Địa chỉ giao hàng</h5>
+                                 <p class="mb-1"><strong><?= h($address['receiver_name']) ?></strong> - <?= h($address['phone']) ?></p>
+                                 <p class="mb-0"><?= h($address['address_detail'] . ', ' . $address['ward'] . ', ' . $address['district'] . ', ' . $address['province']) ?></p>
                               </div>
                            </div>
                         </div>
-                        <!-- end row -->
+                        <div class="col-lg-4">
+                           <div class="card mb-3">
+                              <div class="card-body">
+                                 <h5 class="mb-3">Thanh toán</h5>
+                                 <form method="post" action="">
+                                    <div class="form-group">
+                                       <label>Phương thức</label>
+                                       <select name="payment_method" class="form-control">
+                                          <option>Tiền mặt</option>
+                                          <option>Chuyển khoản</option>
+                                       </select>
+                                    </div>
+                                    <div class="d-flex justify-content-between"><span>Tạm tính</span><span><?= h(money_vn($book['sell_price'])) ?></span></div>
+                                    <div class="d-flex justify-content-between mt-2"><span>Phí vận chuyển</span><span class="text-success">Miễn phí</span></div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between"><span class="font-weight-bold">Tổng</span><span class="font-weight-bold text-danger"><?= h(money_vn($book['sell_price'])) ?></span></div>
+                                    <div class="mt-4">
+                                       <button type="submit" class="btn btn-primary btn-block mb-2">Xác nhận đặt hàng</button>
+                                       <a href="index.php" class="btn btn-secondary btn-block">Tiếp tục mua sắm</a>
+                                    </div>
+                                 </form>
+                              </div>
+                           </div>
+                        </div>
                      </div>
-                  </div>
+                  <?php endif; ?>
                </div>
             </div>
          </div>
       </div>
    </div>
+</div>
 
-<?php include "includes/footer.php"; ?>
+<?php include 'includes/footer.php'; ?>

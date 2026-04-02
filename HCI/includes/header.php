@@ -1,19 +1,19 @@
+
+<?php
+require_once __DIR__ . '/bootstrap.php';
+$page_title = $page_title ?? 'NHASACHTV - Nhà sách trực tuyến';
+?>
 <!doctype html>
-<html lang="en">
+<html lang="vi">
    <head>
-      <!-- Required meta tags -->
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title>NHASACHTV - Nhà sách trực tuyến</title>
-      <!-- Favicon -->
+      <title><?= h($page_title) ?></title>
       <link rel="shortcut icon" href="images/favicon.ico" />
-      <!-- Bootstrap CSS -->
       <link rel="stylesheet" href="css/bootstrap.min.css">
-      <!-- Typography CSS -->
       <link rel="stylesheet" href="css/typography.css">
-      <!-- Style CSS -->
       <link rel="stylesheet" href="css/style.css">
-      <!-- Responsive CSS -->
       <link rel="stylesheet" href="css/responsive.css">
+      <link rel="stylesheet" href="css/public.css">
    </head>
    <body>
