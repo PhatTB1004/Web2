@@ -20,20 +20,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sellPrice = calc_sale_price($costPrice, $profitPercent);
 
     if ($bookname === '' || $authorId <= 0) {
+        if ($image) {
+            delete_file_if_exists($image);
+        }
         flash('danger', 'Tên sách và tác giả là bắt buộc.');
         redirect('add-book.php');
     }
 
-    $stmt = mysqli_prepare(db(), 'INSERT INTO books (image, bookname, book_code, author_id, info, cost_price, profit_percent, sell_price, stock_quantity, updated_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)');
-    mysqli_stmt_bind_param($stmt, 'sssisdddis', $image, $bookname, $bookCode, $authorId, $info, $costPrice, $profitPercent, $sellPrice, $stockQuantity, $status);
-    mysqli_stmt_execute($stmt);
-    $bookId = mysqli_insert_id(db());
-    mysqli_stmt_close($stmt);
+    mysqli_begin_transaction(db());
+    try {
+        $stmt = mysqli_prepare(db(), 'INSERT INTO books (image, bookname, book_code, author_id, info, cost_price, profit_percent, sell_price, stock_quantity, updated_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)');
+        mysqli_stmt_bind_param($stmt, 'sssisdddis', $image, $bookname, $bookCode, $authorId, $info, $costPrice, $profitPercent, $sellPrice, $stockQuantity, $status);
+        mysqli_stmt_execute($stmt);
+        $bookId = (int) mysqli_insert_id(db());
+        mysqli_stmt_close($stmt);
 
-    save_book_categories($bookId, $categoryIds);
+        save_book_categories($bookId, $categoryIds);
 
-    flash('success', 'Đã thêm sản phẩm.');
-    redirect('books.php');
+        if ($stockQuantity > 0) {
+            create_completed_import_entry($bookId, $stockQuantity, $costPrice);
+        }
+
+        mysqli_commit(db());
+        flash('success', 'Đã thêm sản phẩm.');
+        redirect('books.php');
+    } catch (Throwable $e) {
+        mysqli_rollback(db());
+        if ($image) {
+            delete_file_if_exists($image);
+        }
+        flash('danger', $e->getMessage());
+        redirect('add-book.php');
+    }
 }
 
 include __DIR__ . '/includes/header.php';

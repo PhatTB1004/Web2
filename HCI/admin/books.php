@@ -6,19 +6,23 @@ require_admin();
 if (!empty($_GET['delete'])) {
     $id = (int) $_GET['delete'];
     $importCount = fetch_count('SELECT COUNT(*) FROM import_items WHERE book_id = ' . $id);
+    $orderCount = fetch_count('SELECT COUNT(*) FROM order_items WHERE book_id = ' . $id);
     $book = fetch_one('SELECT * FROM books WHERE id = ' . $id);
     if (!$book) {
         flash('danger', 'Không tìm thấy sản phẩm.');
-    } elseif ($importCount === 0) {
+    } elseif ($orderCount > 0) {
+        mysqli_query(db(), "UPDATE books SET status = 'hidden', updated_at = NOW() WHERE id = {$id}");
+        flash('warning', 'Sản phẩm đã phát sinh đơn hàng nên chỉ được ẩn để bảo toàn lịch sử.');
+    } elseif ($importCount > 0) {
+        mysqli_query(db(), "UPDATE books SET status = 'hidden', updated_at = NOW() WHERE id = {$id}");
+        flash('warning', 'Sản phẩm đã có nhập hàng nên chỉ được ẩn trên website.');
+    } else {
         if (!empty($book['image'])) {
-            delete_file_if_exists('../', $book['image']);
+            delete_file_if_exists($book['image']);
         }
         mysqli_query(db(), 'DELETE FROM book_category WHERE book_id = ' . $id);
         mysqli_query(db(), 'DELETE FROM books WHERE id = ' . $id);
         flash('success', 'Đã xoá sản phẩm.');
-    } else {
-        mysqli_query(db(), "UPDATE books SET status = 'hidden', updated_at = NOW() WHERE id = {$id}");
-        flash('warning', 'Sản phẩm đã có nhập hàng nên chỉ được ẩn trên website.');
     }
     redirect('books.php');
 }
@@ -26,6 +30,9 @@ if (!empty($_GET['delete'])) {
 $keyword = trim($_GET['keyword'] ?? '');
 $categoryId = (int) ($_GET['category_id'] ?? 0);
 $authorId = (int) ($_GET['author_id'] ?? 0);
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+$offset = ($page - 1) * $perPage;
 $where = '1=1';
 if ($keyword !== '') {
     $kw = mysqli_real_escape_string(db(), $keyword);
@@ -39,7 +46,13 @@ if ($categoryId > 0) {
 }
 $authors = fetch_all('SELECT * FROM authors ORDER BY fullname');
 $categories = fetch_all('SELECT * FROM categories ORDER BY name');
-$rows = fetch_all("SELECT b.*, a.fullname AS author_name, (SELECT GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') FROM book_category bc JOIN categories c ON c.id = bc.category_id WHERE bc.book_id = b.id) AS category_names FROM books b LEFT JOIN authors a ON a.id = b.author_id WHERE {$where} ORDER BY b.id DESC");
+$total = fetch_count("SELECT COUNT(*) FROM books b LEFT JOIN authors a ON a.id = b.author_id WHERE {$where}");
+$totalPages = max(1, (int) ceil($total / $perPage));
+if ($page > $totalPages) {
+    $page = $totalPages;
+    $offset = ($page - 1) * $perPage;
+}
+$rows = fetch_all("SELECT b.*, a.fullname AS author_name, (SELECT GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') FROM book_category bc JOIN categories c ON c.id = bc.category_id WHERE bc.book_id = b.id) AS category_names FROM books b LEFT JOIN authors a ON a.id = b.author_id WHERE {$where} ORDER BY b.id DESC LIMIT {$offset}, {$perPage}");
 
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
@@ -57,7 +70,7 @@ include __DIR__ . '/includes/sidebar.php';
    </div>
    <div class="iq-card"><div class="iq-card-body table-responsive"><table class="table table-striped table-bordered">
       <thead><tr><th>#</th><th>Mã</th><th>Ảnh</th><th>Tên sách</th><th>Tác giả</th><th>Phân loại</th><th>Giá vốn</th><th>% LN</th><th>Giá bán</th><th>Tồn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-      <tbody><?php $stt = 1; foreach ($rows as $row): ?><tr>
+      <tbody><?php $stt = $offset + 1; foreach ($rows as $row): ?><tr>
          <td><?php echo $stt++; ?></td>
          <td><?php echo h($row['book_code']); ?></td>
          <td><?php if (!empty($row['image'])): ?><img src="../<?php echo h($row['image']); ?>" style="width:50px;height:60px;object-fit:cover;border-radius:6px;" alt=""><?php endif; ?></td>
@@ -72,5 +85,6 @@ include __DIR__ . '/includes/sidebar.php';
          <td><a class="btn btn-sm btn-outline-primary" href="fix-book.php?id=<?php echo (int) $row['id']; ?>">Sửa</a> <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Xoá/ẩn sản phẩm?')" href="books.php?delete=<?php echo (int) $row['id']; ?>">Xoá</a></td>
       </tr><?php endforeach; ?></tbody>
    </table></div></div>
+   <div class="mt-3"><?php render_pagination($page, $totalPages, ['keyword' => $keyword, 'category_id' => $categoryId, 'author_id' => $authorId]); ?></div>
 </div></div>
 <?php include __DIR__ . '/includes/footer.php'; ?>

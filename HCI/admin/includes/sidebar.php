@@ -11,7 +11,8 @@
       </div>
       <div class="px-3 py-3 border-bottom">
          <div class="text-white-50 small">Tài khoản quản trị</div>
-         <div class="font-weight-bold text-white"><?php echo h($currentAdmin['full_name'] ?? $currentAdmin['fullname'] ?? 'Quản trị'); ?></div>
+         <div class="font-weight-bold text-white">
+            <?php echo h($currentAdmin['full_name'] ?? $currentAdmin['fullname'] ?? 'Quản trị'); ?></div>
          <div class="small text-light"><?php echo h($currentAdmin['email'] ?? ''); ?></div>
       </div>
       <div id="sidebar-scrollbar">
@@ -31,3 +32,4 @@
          </nav>
       </div>
    </div>
+</div>

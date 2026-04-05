@@ -6,7 +6,6 @@ function upload_file($field_name, $target_dir, $old_file = null) {
 
     $file = $_FILES[$field_name];
 
-    // Tạo thư mục nếu chưa có
     if (!is_dir($target_dir)) {
         mkdir($target_dir, 0777, true);
     }
@@ -16,21 +15,28 @@ function upload_file($field_name, $target_dir, $old_file = null) {
     $target_path = rtrim($target_dir, '/') . '/' . $filename;
 
     if (move_uploaded_file($file['tmp_name'], $target_path)) {
-        // Xóa file cũ nếu có
         if ($old_file && file_exists($old_file)) {
             unlink($old_file);
         }
 
-        return str_replace('../', '', $target_path); // lưu DB dạng images/...
+        return str_replace('../', '', $target_path);
     }
 
     return null;
 }
 
-function delete_file_if_exists($filepath) {
-    if (!$filepath) return;
+function delete_file_if_exists($filepath, $filename = null) {
+    if ($filepath === null && $filename === null) {
+        return;
+    }
 
-    $fullPath = '../' . ltrim($filepath, '/');
+    if ($filename === null) {
+        $fullPath = '../' . ltrim((string) $filepath, '/');
+    } else {
+        $base = rtrim((string) $filepath, '/');
+        $fullPath = $base . '/' . ltrim((string) $filename, '/');
+    }
+
     if (file_exists($fullPath)) {
         unlink($fullPath);
     }

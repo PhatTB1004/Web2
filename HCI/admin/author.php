@@ -11,7 +11,7 @@ if (!empty($_GET['delete'])) {
     } else {
         $row = fetch_one('SELECT image FROM authors WHERE id = ' . $id);
         if ($row && !empty($row['image'])) {
-            delete_file_if_exists('../', $row['image']);
+            delete_file_if_exists($row['image']);
         }
         mysqli_query(db(), 'DELETE FROM authors WHERE id = ' . $id);
         flash('success', 'Đã xoá tác giả.');
@@ -19,7 +19,16 @@ if (!empty($_GET['delete'])) {
     redirect('author.php');
 }
 
-$rows = fetch_all('SELECT a.*, (SELECT COUNT(*) FROM books WHERE author_id = a.id) AS book_count FROM authors a ORDER BY a.id DESC');
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+$offset = ($page - 1) * $perPage;
+$total = fetch_count('SELECT COUNT(*) FROM authors');
+$totalPages = max(1, (int) ceil($total / $perPage));
+if ($page > $totalPages) {
+    $page = $totalPages;
+    $offset = ($page - 1) * $perPage;
+}
+$rows = fetch_all('SELECT a.*, (SELECT COUNT(*) FROM books WHERE author_id = a.id) AS book_count FROM authors a ORDER BY a.id DESC LIMIT ' . $offset . ', ' . $perPage);
 
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
@@ -43,23 +52,18 @@ include __DIR__ . '/includes/sidebar.php';
                             <th>Thao tác</th>
                         </tr>
                     </thead>
-                    <tbody><?php $stt=1; foreach ($rows as $row): ?><tr>
+                    <tbody><?php $stt = $offset + 1; foreach ($rows as $row): ?><tr>
                             <td><?php echo $stt++; ?></td>
-                            <td><?php if (!empty($row['image'])): ?><img
-                                    src="../<?php echo h($row['image']); ?>"
-                                    style="width:60px;height:60px;object-fit:cover;border-radius:8px;"
-                                    alt=""><?php endif; ?></td>
+                            <td><?php if (!empty($row['image'])): ?><img src="../<?php echo h($row['image']); ?>" style="width:60px;height:60px;object-fit:cover;border-radius:8px;" alt=""><?php endif; ?></td>
                             <td><?php echo h($row['fullname']); ?></td>
                             <td><?php echo h($row['info']); ?></td>
                             <td><?php echo (int) $row['book_count']; ?></td>
-                            <td><a class="btn btn-sm btn-outline-primary"
-                                    href="fix-author.php?id=<?php echo (int) $row['id']; ?>">Sửa</a> <a
-                                    class="btn btn-sm btn-outline-danger" onclick="return confirm('Xoá tác giả?')"
-                                    href="author.php?delete=<?php echo (int) $row['id']; ?>">Xoá</a></td>
+                            <td><a class="btn btn-sm btn-outline-primary" href="fix-author.php?id=<?php echo (int) $row['id']; ?>">Sửa</a> <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Xoá tác giả?')" href="author.php?delete=<?php echo (int) $row['id']; ?>">Xoá</a></td>
                         </tr><?php endforeach; ?></tbody>
                 </table>
             </div>
         </div>
+        <div class="mt-3"><?php render_pagination($page, $totalPages); ?></div>
     </div>
 </div>
 </div>

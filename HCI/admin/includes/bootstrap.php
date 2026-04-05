@@ -153,6 +153,21 @@ function import_status_badge(string $status): string
     return $status === 'completed' ? 'badge badge-success' : 'badge badge-warning';
 }
 
+function render_pagination(int $page, int $totalPages, array $query = []): void
+{
+    if ($totalPages <= 1) {
+        return;
+    }
+
+    echo '<nav><ul class="pagination justify-content-center">';
+    for ($i = 1; $i <= $totalPages; $i++) {
+        $query['page'] = $i;
+        $class = $i === $page ? 'active' : '';
+        echo '<li class="page-item ' . $class . '"><a class="page-link" href="?' . h(http_build_query($query)) . '">' . $i . '</a></li>';
+    }
+    echo '</ul></nav>';
+}
+
 function save_book_categories(int $bookId, array $categoryIds): void
 {
     $conn = db();
@@ -186,6 +201,28 @@ function recalc_book_sell_price(int $bookId): void
     mysqli_stmt_bind_param($stmt, 'di', $sell, $bookId);
     mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
+}
+
+function create_completed_import_entry(int $bookId, int $quantity, float $importPrice, string $note = 'Nhập ban đầu khi thêm sản phẩm'): int
+{
+    $date = date('Y-m-d');
+    $completedAt = date('Y-m-d H:i:s');
+    $status = 'completed';
+    $total = $quantity * $importPrice;
+
+    $stmt = mysqli_prepare(db(), 'INSERT INTO imports (`date`, status, note, total_amount, completed_at) VALUES (?, ?, ?, ?, ?)');
+    mysqli_stmt_bind_param($stmt, 'sssds', $date, $status, $note, $total, $completedAt);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+    $importId = (int) mysqli_insert_id(db());
+
+    $subtotal = $total;
+    $stmt = mysqli_prepare(db(), 'INSERT INTO import_items (import_id, book_id, import_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?)');
+    mysqli_stmt_bind_param($stmt, 'iidid', $importId, $bookId, $importPrice, $quantity, $subtotal);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    return $importId;
 }
 
 function complete_import(int $importId): bool
@@ -258,10 +295,18 @@ function update_order_status(int $orderId, string $newStatus): bool
 
         $oldStatus = $order['status'];
         if ($oldStatus !== $newStatus) {
-            $items = fetch_all('SELECT oi.book_id, oi.quantity FROM order_items oi WHERE oi.order_id = ' . (int) $orderId . ' FOR UPDATE');
+            $items = fetch_all('SELECT oi.book_id, oi.quantity, b.stock_quantity, b.bookname FROM order_items oi JOIN books b ON b.id = oi.book_id WHERE oi.order_id = ' . (int) $orderId . ' FOR UPDATE');
+
             if ($oldStatus !== 'delivered' && $newStatus === 'delivered') {
                 foreach ($items as $item) {
-                    $stmt = mysqli_prepare($conn, 'UPDATE books SET stock_quantity = GREATEST(stock_quantity - ?, 0), updated_at = NOW() WHERE id = ?');
+                    $qty = (float) $item['quantity'];
+                    $stock = (float) $item['stock_quantity'];
+                    if ($stock < $qty) {
+                        throw new Exception('Sản phẩm ' . ($item['bookname'] ?? '') . ' không đủ tồn kho để giao.');
+                    }
+                }
+                foreach ($items as $item) {
+                    $stmt = mysqli_prepare($conn, 'UPDATE books SET stock_quantity = stock_quantity - ?, updated_at = NOW() WHERE id = ?');
                     $qty = (float) $item['quantity'];
                     $bookId = (int) $item['book_id'];
                     mysqli_stmt_bind_param($stmt, 'di', $qty, $bookId);

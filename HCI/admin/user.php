@@ -3,7 +3,6 @@ $page_title = 'Người dùng';
 require_once __DIR__ . '/includes/bootstrap.php';
 require_admin();
 
-// ===== XỬ LÝ ACTION =====
 if (!empty($_GET['action']) && !empty($_GET['id'])) {
     $id = (int) $_GET['id'];
     $action = $_GET['action'];
@@ -12,10 +11,9 @@ if (!empty($_GET['action']) && !empty($_GET['id'])) {
     $me = current_admin();
 
     if ($user) {
-        $isSelf = ((int)$user['id'] === (int)($me['id'] ?? 0));
+        $isSelf = ((int) $user['id'] === (int) ($me['id'] ?? 0));
         $isAdmin = (($user['role'] ?? '') === 'admin');
 
-        // Không cho thao tác với admin
         if ($isAdmin) {
             flash('warning', 'Không thể thao tác với tài khoản quản trị.');
             redirect('user.php');
@@ -28,29 +26,29 @@ if (!empty($_GET['action']) && !empty($_GET['id'])) {
                 mysqli_query(db(), "UPDATE users SET status = 'locked' WHERE id = {$id}");
                 flash('success', 'Đã khoá tài khoản.');
             }
-
         } elseif ($action === 'unlock') {
             mysqli_query(db(), "UPDATE users SET status = 'active' WHERE id = {$id}");
             flash('success', 'Đã mở khoá tài khoản.');
-
         } elseif ($action === 'reset') {
-            $temp = 'TV' . random_int(100000, 999999);
+            $temp = 'MK' . random_int(100000, 999999);
             $hash = password_hash($temp, PASSWORD_DEFAULT);
 
-            $stmt = mysqli_prepare(db(), "UPDATE users SET password = ? WHERE id = ?");
-            mysqli_stmt_bind_param($stmt, "si", $hash, $id);
+            $stmt = mysqli_prepare(db(), 'UPDATE users SET password = ? WHERE id = ?');
+            mysqli_stmt_bind_param($stmt, 'si', $hash, $id);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
 
-            flash('success', 'Mật khẩu tạm thời: ' . $temp);
+            flash('success', 'Mật khẩu tạm thời của ' . h($user['username']) . ': ' . $temp);
         }
     }
 
     redirect('user.php');
 }
 
-// ===== TÌM KIẾM =====
 $keyword = trim($_GET['keyword'] ?? '');
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+$offset = ($page - 1) * $perPage;
 $where = "role <> 'admin'";
 
 if ($keyword !== '') {
@@ -58,13 +56,13 @@ if ($keyword !== '') {
     $where .= " AND (username LIKE '%{$kw}%' OR fullname LIKE '%{$kw}%' OR email LIKE '%{$kw}%')";
 }
 
-// ===== LẤY DANH SÁCH USER (ẨN ADMIN) =====
-$users = fetch_all("
-    SELECT id, username, fullname, email, phone, status
-    FROM users
-    WHERE {$where}
-    ORDER BY id DESC
-");
+$total = fetch_count("SELECT COUNT(*) FROM users WHERE {$where}");
+$totalPages = max(1, (int) ceil($total / $perPage));
+if ($page > $totalPages) {
+    $page = $totalPages;
+    $offset = ($page - 1) * $perPage;
+}
+$users = fetch_all("SELECT id, username, fullname, email, phone, status FROM users WHERE {$where} ORDER BY id DESC LIMIT {$offset}, {$perPage}");
 
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
@@ -72,7 +70,13 @@ include __DIR__ . '/includes/sidebar.php';
 
 <div id="content-page" class="content-page">
    <div class="container-fluid">
-
+   <?php if ($flash): ?>
+    <div class="flash-wrap">
+        <div class="alert alert-<?php echo h($flash['type']); ?> mb-0 rounded-0 text-center">
+            <?php echo h($flash['message']); ?>
+        </div>
+    </div>
+    <?php endif; ?>
       <div class="iq-card mb-4">
          <div class="iq-card-header d-flex justify-content-between align-items-center">
             <h4 class="card-title mb-0">Quản lý người dùng</h4>
@@ -107,7 +111,7 @@ include __DIR__ . '/includes/sidebar.php';
                   </tr>
                </thead>
                <tbody>
-                  <?php $stt = 1; foreach ($users as $row): ?>
+                  <?php $stt = $offset + 1; foreach ($users as $row): ?>
                   <tr>
                      <td><?php echo $stt++; ?></td>
                      <td><?php echo h($row['username']); ?></td>
@@ -120,25 +124,13 @@ include __DIR__ . '/includes/sidebar.php';
                         </span>
                      </td>
                      <td>
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="user.php?action=reset&id=<?php echo (int)$row['id']; ?>">
-                           Reset mật khẩu
-                        </a>
-
-                        <?php if ((int)$row['id'] === (int)(current_admin()['id'] ?? 0)): ?>
+                        <a class="btn btn-sm btn-outline-primary" href="user.php?action=reset&id=<?php echo (int) $row['id']; ?>">Reset mật khẩu</a>
+                        <?php if ((int) $row['id'] === (int) (current_admin()['id'] ?? 0)): ?>
                            <span class="text-muted ml-2">Đang đăng nhập</span>
-
                         <?php elseif ($row['status'] === 'locked'): ?>
-                           <a class="btn btn-sm btn-outline-success"
-                              href="user.php?action=unlock&id=<?php echo (int)$row['id']; ?>">
-                              Mở khoá
-                           </a>
-
+                           <a class="btn btn-sm btn-outline-success" href="user.php?action=unlock&id=<?php echo (int) $row['id']; ?>">Mở khoá</a>
                         <?php else: ?>
-                           <a class="btn btn-sm btn-outline-danger"
-                              href="user.php?action=lock&id=<?php echo (int)$row['id']; ?>">
-                              Khoá
-                           </a>
+                           <a class="btn btn-sm btn-outline-danger" href="user.php?action=lock&id=<?php echo (int) $row['id']; ?>">Khoá</a>
                         <?php endif; ?>
                      </td>
                   </tr>
@@ -147,6 +139,8 @@ include __DIR__ . '/includes/sidebar.php';
             </table>
          </div>
       </div>
+
+      <div class="mt-3"><?php render_pagination($page, $totalPages, ['keyword' => $keyword]); ?></div>
 
    </div>
 </div>

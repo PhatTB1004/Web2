@@ -696,3 +696,25 @@ Index Of Script
 
 })(jQuery);
 
+
+(function () {
+   const btn = document.querySelector('.wrapper-menu');
+
+   if (btn) {
+      btn.addEventListener('click', function (e) {
+         e.preventDefault();
+         document.body.classList.toggle('sidebar-main');
+         this.classList.toggle('open', document.body.classList.contains('sidebar-main'));
+      });
+   }
+
+   const searchForm = document.querySelector('.iq-search-bar form');
+   if (searchForm) {
+      searchForm.addEventListener('submit', function (e) {
+         const input = searchForm.querySelector('input[name="q"]');
+         if (input && !input.value.trim()) {
+            e.preventDefault();
+         }
+      });
+   }
+})();
