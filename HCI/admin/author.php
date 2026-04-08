@@ -54,11 +54,16 @@ include __DIR__ . '/includes/sidebar.php';
                     </thead>
                     <tbody><?php $stt = $offset + 1; foreach ($rows as $row): ?><tr>
                             <td><?php echo $stt++; ?></td>
-                            <td><?php if (!empty($row['image'])): ?><img src="../<?php echo h($row['image']); ?>" style="width:60px;height:60px;object-fit:cover;border-radius:8px;" alt=""><?php endif; ?></td>
+                            <td><?php if (!empty($row['image'])): ?><img src="../<?php echo h($row['image']); ?>"
+                                    style="width:60px;height:60px;object-fit:cover;border-radius:8px;"
+                                    alt=""><?php endif; ?></td>
                             <td><?php echo h($row['fullname']); ?></td>
                             <td><?php echo h($row['info']); ?></td>
                             <td><?php echo (int) $row['book_count']; ?></td>
-                            <td><a class="btn btn-sm btn-outline-primary" href="fix-author.php?id=<?php echo (int) $row['id']; ?>">Sửa</a> <a class="btn btn-sm btn-outline-danger" onclick="return confirm('Xoá tác giả?')" href="author.php?delete=<?php echo (int) $row['id']; ?>">Xoá</a></td>
+                            <td><a class="btn btn-sm btn-outline-primary"
+                                    href="fix-author.php?id=<?php echo (int) $row['id']; ?>">Sửa</a> <a
+                                    class="btn btn-sm btn-outline-danger" onclick="return confirm('Xoá tác giả?')"
+                                    href="author.php?delete=<?php echo (int) $row['id']; ?>">Xoá</a></td>
                         </tr><?php endforeach; ?></tbody>
                 </table>
             </div>

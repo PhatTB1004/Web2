@@ -349,4 +349,46 @@ function selected_attr(bool $cond): string
 {
     return $cond ? 'selected' : '';
 }
+function delete_import(int $importId): bool
+{
+    $conn = db();
+    mysqli_begin_transaction($conn);
+
+    try {
+        $import = fetch_one('SELECT * FROM imports WHERE id = ' . (int) $importId . ' FOR UPDATE');
+        if (!$import) {
+            throw new Exception('Không tìm thấy phiếu nhập.');
+        }
+
+        if ($import['status'] === 'completed') {
+            throw new Exception('Phiếu nhập đã hoàn thành nên không thể xóa.');
+        }
+
+        mysqli_query($conn, 'DELETE FROM import_items WHERE import_id = ' . (int) $importId);
+        mysqli_query($conn, 'DELETE FROM imports WHERE id = ' . (int) $importId);
+
+        mysqli_commit($conn);
+        return true;
+    } catch (Throwable $e) {
+        mysqli_rollback($conn);
+        flash('danger', $e->getMessage());
+        return false;
+    }
+}
+function order_status_text($status) {
+    $map = [
+        'pending'   => 'Chờ xử lý',
+        'confirmed' => 'Đã xác nhận',
+        'delivered' => 'Đã giao',
+        'cancelled' => 'Đã hủy',
+    ];
+    return $map[$status] ?? $status;
+}
+function book_status_text($status) {
+    $map = [
+        'active' => 'Hiển thị',
+        'hidden' => 'Ẩn',
+    ];
+    return $map[$status] ?? $status;
+}
 ?>

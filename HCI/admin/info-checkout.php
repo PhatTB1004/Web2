@@ -26,7 +26,8 @@ include __DIR__ . '/includes/sidebar.php';
    <div class="container-fluid">
       <div class="iq-card">
          <div class="iq-card-header d-flex justify-content-between align-items-center">
-            <h4 class="card-title mb-0">Chi tiết đơn hàng DH<?php echo str_pad((string) $order['id'], 3, '0', STR_PAD_LEFT); ?></h4>
+            <h4 class="card-title mb-0">Chi tiết đơn hàng
+               DH<?php echo str_pad((string) $order['id'], 3, '0', STR_PAD_LEFT); ?></h4>
             <a href="checkout.php" class="btn btn-secondary btn-sm">← Quay lại</a>
          </div>
          <div class="iq-card-body">
@@ -38,13 +39,28 @@ include __DIR__ . '/includes/sidebar.php';
                </div>
                <div class="col-md-6">
                   <p><strong>Ngày đặt:</strong> <?php echo h($order['date']); ?></p>
-                  <p><strong>Địa chỉ giao hàng:</strong> <?php echo h($order['shipping_address'] . ', ' . $order['ward'] . ', ' . $order['district'] . ', ' . $order['province']); ?></p>
-                  <p><strong>Trạng thái:</strong> <span class="<?php echo h(order_status_badge($order['status'])); ?>"><?php echo h($order['status']); ?></span></p>
+                  <p><strong>Địa chỉ giao hàng:</strong>
+                     <?php echo h($order['shipping_address'] . ', ' . $order['ward'] . ', ' . $order['district'] . ', ' . $order['province']); ?>
+                  </p>
+                  <p><strong>Trạng thái:</strong>
+                     <span class="<?php echo h(order_status_badge($order['status'])); ?>">
+                        <?php echo h(order_status_text($order['status'])); ?>
+                     </span>
+                  </p>
                </div>
             </div>
             <div class="table-responsive">
                <table class="table table-bordered">
-                  <thead><tr><th>STT</th><th>Mã sách</th><th>Tên sách</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                  <thead>
+                     <tr>
+                        <th>STT</th>
+                        <th>Mã sách</th>
+                        <th>Tên sách</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                     </tr>
+                  </thead>
                   <tbody>
                      <?php $stt = 1; foreach ($items as $item): ?>
                      <tr>
@@ -56,7 +72,10 @@ include __DIR__ . '/includes/sidebar.php';
                         <td><?php echo vn_money($item['subtotal']); ?> ₫</td>
                      </tr>
                      <?php endforeach; ?>
-                     <tr class="table-primary"><td colspan="5" class="text-right font-weight-bold">Tổng cộng</td><td><strong><?php echo vn_money($order['price']); ?> ₫</strong></td></tr>
+                     <tr class="table-primary">
+                        <td colspan="5" class="text-right font-weight-bold">Tổng cộng</td>
+                        <td><strong><?php echo vn_money($order['price']); ?> ₫</strong></td>
+                     </tr>
                   </tbody>
                </table>
             </div>
@@ -65,10 +84,18 @@ include __DIR__ . '/includes/sidebar.php';
                <div class="form-group">
                   <label><strong>Cập nhật tình trạng đơn hàng:</strong></label>
                   <select name="status" class="form-control w-50">
-                     <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>pending</option>
-                     <option value="confirmed" <?php echo $order['status'] === 'confirmed' ? 'selected' : ''; ?>>confirmed</option>
-                     <option value="delivered" <?php echo $order['status'] === 'delivered' ? 'selected' : ''; ?>>delivered</option>
-                     <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>cancelled</option>
+                     <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>
+                        Chờ xử lý
+                     </option>
+                     <option value="confirmed" <?php echo $order['status'] === 'confirmed' ? 'selected' : ''; ?>>
+                        Đã xác nhận
+                     </option>
+                     <option value="delivered" <?php echo $order['status'] === 'delivered' ? 'selected' : ''; ?>>
+                        Đã giao
+                     </option>
+                     <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>
+                        Đã hủy
+                     </option>
                   </select>
                </div>
                <button class="btn btn-primary">Lưu thay đổi</button>

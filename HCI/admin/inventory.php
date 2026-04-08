@@ -36,17 +36,85 @@ $rows = fetch_all("SELECT b.*, a.fullname AS author_name, (SELECT GROUP_CONCAT(c
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page"><div class="container-fluid">
-   <div class="iq-card mb-4"><div class="iq-card-header"><h4 class="card-title mb-0">Tra cứu tồn kho</h4></div><div class="iq-card-body"><form class="row">
-      <div class="col-md-3 form-group"><label>Từ ngày</label><input type="date" name="from" class="form-control" value="<?php echo h($from); ?>"></div>
-      <div class="col-md-3 form-group"><label>Đến ngày</label><input type="date" name="to" class="form-control" value="<?php echo h($to); ?>"></div>
-      <div class="col-md-3 form-group"><label>Phân loại</label><select name="category_id" class="form-control"><option value="0">Tất cả</option><?php foreach ($categories as $cat): ?><option value="<?php echo (int) $cat['id']; ?>" <?php echo $categoryId === (int) $cat['id'] ? 'selected' : ''; ?>><?php echo h($cat['name']); ?></option><?php endforeach; ?></select></div>
-      <div class="col-md-3 form-group"><label>Tên / mã sách</label><input name="keyword" class="form-control" value="<?php echo h($keyword); ?>"></div>
-      <div class="col-md-2 form-group"><label>Ngưỡng cảnh báo</label><input type="number" name="threshold" class="form-control" value="<?php echo (int) $threshold; ?>"></div>
-      <div class="col-md-2 form-group align-self-end"><button class="btn btn-primary">Lọc</button></div>
-   </form></div></div>
-   <div class="iq-card"><div class="iq-card-body table-responsive"><table class="table table-striped table-bordered"><thead><tr><th>#</th><th>Sách</th><th>Phân loại</th><th>Tồn hiện tại</th><th>Tồn tại thời điểm</th><th>Trạng thái</th></tr></thead><tbody><?php $stt = $offset + 1; foreach ($rows as $row): $stock = (int) $row['stock_at_to']; ?><tr><td><?php echo $stt++; ?></td><td><?php echo h($row['bookname']); ?></td><td><?php echo h($row['category_names']); ?></td><td><?php echo (int) $row['stock_quantity']; ?></td><td><?php echo $stock; ?></td><td><?php if ($stock <= $threshold): ?><span class="badge badge-danger">Sắp hết hàng</span><?php else: ?><span class="badge badge-success">Còn hàng</span><?php endif; ?></td></tr><?php endforeach; ?></tbody></table></div></div>
-   <div class="mt-3"><?php render_pagination($page, $totalPages, ['from' => $from, 'to' => $to, 'category_id' => $categoryId, 'keyword' => $keyword, 'threshold' => $threshold]); ?></div>
-   <div class="iq-card mt-4"><div class="iq-card-header"><h4 class="card-title mb-0">Báo cáo nhập - xuất</h4></div><div class="iq-card-body table-responsive"><table class="table table-bordered"><thead><tr><th>Sách</th><th>Tổng nhập</th><th>Tổng xuất</th><th>Chênh lệch</th></tr></thead><tbody><?php foreach ($rows as $row): ?><tr><td><?php echo h($row['bookname']); ?></td><td><?php echo (int) $row['imported_qty']; ?></td><td><?php echo (int) $row['exported_qty']; ?></td><td><?php echo (int) $row['imported_qty'] - (int) $row['exported_qty']; ?></td></tr><?php endforeach; ?></tbody></table></div></div>
-</div></div>
+<div id="content-page" class="content-page">
+    <div class="container-fluid">
+        <div class="iq-card mb-4">
+            <div class="iq-card-header">
+                <h4 class="card-title mb-0">Tra cứu tồn kho</h4>
+            </div>
+            <div class="iq-card-body">
+                <form class="row">
+                    <div class="col-md-3 form-group"><label>Từ ngày</label><input type="date" name="from"
+                            class="form-control" value="<?php echo h($from); ?>"></div>
+                    <div class="col-md-3 form-group"><label>Đến ngày</label><input type="date" name="to"
+                            class="form-control" value="<?php echo h($to); ?>"></div>
+                    <div class="col-md-3 form-group"><label>Phân loại</label><select name="category_id"
+                            class="form-control">
+                            <option value="0">Tất cả</option><?php foreach ($categories as $cat): ?><option
+                                value="<?php echo (int) $cat['id']; ?>"
+                                <?php echo $categoryId === (int) $cat['id'] ? 'selected' : ''; ?>>
+                                <?php echo h($cat['name']); ?></option><?php endforeach; ?>
+                        </select></div>
+                    <div class="col-md-3 form-group"><label>Tên / mã sách</label><input name="keyword"
+                            class="form-control" value="<?php echo h($keyword); ?>"></div>
+                    <div class="col-md-2 form-group"><label>Ngưỡng cảnh báo</label><input type="number" name="threshold"
+                            class="form-control" value="<?php echo (int) $threshold; ?>"></div>
+                    <div class="col-md-2 form-group align-self-end"><button class="btn btn-primary">Lọc</button></div>
+                </form>
+            </div>
+        </div>
+        <div class="iq-card">
+            <div class="iq-card-body table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Sách</th>
+                            <th>Phân loại</th>
+                            <th>Tồn hiện tại</th>
+                            <th>Tồn tại thời điểm</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody><?php $stt = $offset + 1; foreach ($rows as $row): $stock = (int) $row['stock_at_to']; ?><tr>
+                            <td><?php echo $stt++; ?></td>
+                            <td><?php echo h($row['bookname']); ?></td>
+                            <td><?php echo h($row['category_names']); ?></td>
+                            <td><?php echo (int) $row['stock_quantity']; ?></td>
+                            <td><?php echo $stock; ?></td>
+                            <td><?php if ($stock <= $threshold): ?><span class="badge badge-danger">Sắp hết
+                                    hàng</span><?php else: ?><span class="badge badge-success">Còn
+                                    hàng</span><?php endif; ?></td>
+                        </tr><?php endforeach; ?></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="mt-3">
+            <?php render_pagination($page, $totalPages, ['from' => $from, 'to' => $to, 'category_id' => $categoryId, 'keyword' => $keyword, 'threshold' => $threshold]); ?>
+        </div>
+        <div class="iq-card mt-4">
+            <div class="iq-card-header">
+                <h4 class="card-title mb-0">Báo cáo nhập - xuất</h4>
+            </div>
+            <div class="iq-card-body table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Sách</th>
+                            <th>Tổng nhập</th>
+                            <th>Tổng xuất</th>
+                            <th>Chênh lệch</th>
+                        </tr>
+                    </thead>
+                    <tbody><?php foreach ($rows as $row): ?><tr>
+                            <td><?php echo h($row['bookname']); ?></td>
+                            <td><?php echo (int) $row['imported_qty']; ?></td>
+                            <td><?php echo (int) $row['exported_qty']; ?></td>
+                            <td><?php echo (int) $row['imported_qty'] - (int) $row['exported_qty']; ?></td>
+                        </tr><?php endforeach; ?></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 <?php include __DIR__ . '/includes/footer.php'; ?>

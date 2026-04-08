@@ -58,34 +58,95 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page"><div class="container-fluid"><div class="iq-card"><div class="iq-card-header"><h4 class="card-title mb-0">Thêm phiếu nhập</h4></div><div class="iq-card-body">
-<form method="post">
-   <div class="row">
-      <div class="col-md-4 form-group"><label>Ngày nhập</label><input type="date" name="date" class="form-control" value="<?php echo h(date('Y-m-d')); ?>" required></div>
-      <div class="col-md-8 form-group"><label>Ghi chú</label><input name="note" class="form-control"></div>
-   </div>
-   <div id="importRows">
-      <div class="row import-row">
-         <div class="col-md-5 form-group"><label>Sách</label><select name="book_id[]" class="form-control" required><option value="">-- Chọn --</option><?php foreach ($books as $b): ?><option value="<?php echo (int) $b['id']; ?>"><?php echo h($b['book_code'] . ' - ' . $b['bookname'] . ' (' . $b['author_name'] . ')'); ?></option><?php endforeach; ?></select></div>
-         <div class="col-md-3 form-group"><label>Số lượng</label><input type="number" min="1" step="1" name="quantity[]" class="form-control" required></div>
-         <div class="col-md-4 form-group"><label>Giá nhập</label><input type="number" min="0" step="0.01" name="import_price[]" class="form-control" required></div>
-      </div>
-   </div>
-   <button type="button" class="btn btn-outline-secondary mb-3" id="addRow">Thêm dòng</button>
-   <div><button class="btn btn-primary">Lưu nháp</button> <a href="import.php" class="btn btn-secondary">Quay lại</a></div>
-</form>
-<script>
-(function(){
-  const btn = document.getElementById('addRow');
-  const rows = document.getElementById('importRows');
-  btn.addEventListener('click', function(){
-    const first = rows.querySelector('.import-row');
-    const clone = first.cloneNode(true);
-    clone.querySelectorAll('input').forEach(i => i.value = '');
-    clone.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
-    rows.appendChild(clone);
-  });
-})();
-</script>
-</div></div></div></div></div>
+<div id="content-page" class="content-page">
+    <div class="container-fluid">
+        <div class="iq-card">
+            <div class="iq-card-header">
+                <h4 class="card-title mb-0">Thêm phiếu nhập</h4>
+            </div>
+            <div class="iq-card-body">
+                <form method="post">
+                    <div class="row">
+                        <div class="col-md-4 form-group"><label>Ngày nhập</label><input type="date" name="date"
+                                class="form-control" value="<?php echo h(date('Y-m-d')); ?>" required></div>
+                        <div class="col-md-8 form-group"><label>Ghi chú</label><input name="note" class="form-control">
+                        </div>
+                    </div>
+                    <div id="importRows">
+                        <div class="row import-row">
+                            <div class="col-md-5 form-group book-picker">
+                                <label>Tìm sách</label>
+                                <input type="text" class="form-control book-search"
+                                    placeholder="Nhập mã hoặc tên sách...">
+
+                                <label class="mt-2">Sách</label>
+                                <select name="book_id[]" class="form-control book-select" required>
+                                    <option value="">-- Chọn --</option>
+                                    <?php foreach ($books as $b): ?>
+                                    <option value="<?php echo (int) $b['id']; ?>">
+                                        <?php echo h($b['book_code'] . ' - ' . $b['bookname'] . ' (' . $b['author_name'] . ')'); ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 form-group"><label>Số lượng</label><input type="number" min="1"
+                                    step="1" name="quantity[]" class="form-control" required></div>
+                            <div class="col-md-4 form-group"><label>Giá nhập</label><input type="number" min="0"
+                                    step="0.01" name="import_price[]" class="form-control" required></div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary mb-3" id="addRow">Thêm dòng</button>
+                    <div><button class="btn btn-primary">Lưu nháp</button> <a href="import.php"
+                            class="btn btn-secondary">Quay lại</a></div>
+                </form>
+                <script>
+                    (function () {
+                        const btn = document.getElementById('addRow');
+                        const rows = document.getElementById('importRows');
+
+                        function filterSelect(select, keyword) {
+                            const q = keyword.toLowerCase().trim();
+                            Array.from(select.options).forEach((opt, idx) => {
+                                if (idx === 0) return; // giữ option "-- Chọn --"
+                                const text = opt.textContent.toLowerCase();
+                                opt.hidden = q !== '' && !text.includes(q);
+                            });
+
+                            if (select.selectedOptions[0] && select.selectedOptions[0].hidden) {
+                                select.value = '';
+                            }
+                        }
+
+                        function bindPicker(picker) {
+                            const input = picker.querySelector('.book-search');
+                            const select = picker.querySelector('.book-select');
+
+                            input.addEventListener('input', function () {
+                                filterSelect(select, this.value);
+                            });
+                        }
+
+                        document.querySelectorAll('.book-picker').forEach(bindPicker);
+
+                        btn.addEventListener('click', function () {
+                            const first = rows.querySelector('.import-row');
+                            const clone = first.cloneNode(true);
+
+                            clone.querySelectorAll('input').forEach(i => i.value = '');
+                            clone.querySelectorAll('select').forEach(s => {
+                                s.selectedIndex = 0;
+                                s.querySelectorAll('option').forEach((opt, idx) => opt.hidden =
+                                    false);
+                            });
+
+                            rows.appendChild(clone);
+                            bindPicker(clone.querySelector('.book-picker'));
+                        });
+                    })();
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 <?php include __DIR__ . '/includes/footer.php'; ?>
