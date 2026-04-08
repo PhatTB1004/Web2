@@ -90,9 +90,9 @@ include __DIR__ . '/includes/sidebar.php';
                         <label>Trạng thái</label>
                         <select name="status" class="form-control">
                             <option value="">Tất cả</option>
-                            <option value="draft" <?php echo $status === 'draft' ? 'selected' : ''; ?>>draft</option>
-                            <option value="completed" <?php echo $status === 'completed' ? 'selected' : ''; ?>>completed
-                            </option>
+                            <option value="draft" <?php echo $status === 'draft' ? 'selected' : ''; ?>>Nháp</option>
+                            <option value="completed" <?php echo $status === 'completed' ? 'selected' : ''; ?>>Hoàn
+                                thành</option>
                         </select>
                     </div>
                     <div class="col-12 form-group">
@@ -119,7 +119,7 @@ include __DIR__ . '/includes/sidebar.php';
                             <td><?php echo 'PN' . str_pad((string) $row['id'], 3, '0', STR_PAD_LEFT); ?></td>
                             <td><?php echo h($row['date']); ?></td>
                             <td><span
-                                    class="<?php echo h(import_status_badge($row['status'])); ?>"><?php echo h($row['status']); ?></span>
+                                    class="<?php echo h(import_status_badge($row['status'])); ?>"><?php echo h(import_status_text($row['status'])); ?></span>
                             </td>
                             <td><?php echo h($row['note']); ?></td>
                             <td><?php echo vn_money($row['total_amount']); ?> ₫</td>

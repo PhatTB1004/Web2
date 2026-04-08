@@ -128,7 +128,7 @@ include __DIR__ . '/includes/sidebar.php';
                <div class="col-md-4">
                   <strong>Trạng thái:</strong>
                   <span class="<?php echo h(import_status_badge($import['status'])); ?>">
-                     <?php echo h($import['status']); ?>
+                     <?php echo h(import_status_text($import['status'])); ?>
                   </span>
                </div>
                <div class="col-md-12 mt-2">
