@@ -26,13 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stockQuantity = (int) $book['stock_quantity'];
 
     if ($removeImage && $image) {
-        delete_file_if_exists('images/books', $image);
+        delete_file_if_exists('../images/books', $image);
         $image = '';
     }
-    $newImage = upload_file('image', 'images/books', $image);
+    $newImage = upload_file('image', '../images/books', $image);
     if ($newImage !== null && $newImage !== $image) {
         if ($image) {
-            delete_file_if_exists('images/books', $image);
+            delete_file_if_exists('../images/books', $image);
         }
         $image = $newImage ?? '';
     }
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page">
+
     <div class="container-fluid">
         <div class="iq-card">
             <div class="iq-card-header">
@@ -94,9 +94,7 @@ include __DIR__ . '/includes/sidebar.php';
                         <div class="col-md-3 form-group"><label>Giá vốn</label><input type="number" step="0.01" min="0"
                                 class="form-control" value="<?php echo h($book['cost_price']); ?>" readonly><small
                                 class="text-muted">Giá vốn được ghi nhận qua phiếu nhập.</small></div>
-                        <div class="col-md-3 form-group"><label>% lợi nhuận</label><input type="number" step="0.01"
-                                min="0" name="profit_percent" class="form-control"
-                                value="<?php echo h($book['profit_percent']); ?>"></div>
+                        <div class="col-md-3 form-group"><label>% Lợi Nhuận</label><input type="number" step="0.01" min="0" name="profit_percent" class="form-control" value="<?php echo h($book['profit_percent']); ?>"></div>
                         <div class="col-md-3 form-group"><label>Số lượng tồn</label><input type="number" step="1"
                                 min="0" class="form-control" value="<?php echo (int) $book['stock_quantity']; ?>"
                                 readonly><small class="text-muted">Tồn kho được cập nhật qua nhập hàng và đơn

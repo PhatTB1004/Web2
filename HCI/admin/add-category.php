@@ -21,5 +21,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page"><div class="container-fluid"><div class="iq-card"><div class="iq-card-header"><h4 class="card-title mb-0">Thêm phân loại</h4></div><div class="iq-card-body"><form method="post"><div class="form-group"><label>Tên phân loại</label><input name="name" class="form-control" required></div><div class="form-group"><label>Thông tin</label><textarea name="info" rows="4" class="form-control"></textarea></div><button class="btn btn-primary">Lưu</button> <a href="category.php" class="btn btn-secondary">Quay lại</a></form></div></div></div></div></div>
+
+    <div class="container-fluid">
+        <div class="iq-card">
+            <div class="iq-card-header">
+                <h4 class="card-title mb-0">Thêm phân loại</h4>
+            </div>
+            <div class="iq-card-body">
+                <form method="post">
+                    <div class="form-group"><label>Tên phân loại</label><input name="name" class="form-control"
+                            required></div>
+                    <div class="form-group"><label>Thông tin</label><textarea name="info" rows="4"
+                            class="form-control"></textarea></div><button class="btn btn-primary">Lưu</button> <a
+                        href="category.php" class="btn btn-secondary">Quay lại</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 <?php include __DIR__ . '/includes/footer.php'; ?>

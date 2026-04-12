@@ -115,6 +115,41 @@ function user_display_name(?array $user = null): string
     return trim((string) ($user['fullname'] ?? '')) !== '' ? (string) $user['fullname'] : (string) ($user['username'] ?? 'Khách');
 }
 
+function user_avatar_url(?array $user = null): string
+{
+    $user = $user ?: current_user();
+    $avatar = trim((string) ($user['image'] ?? ''));
+
+    // Nếu không có ảnh -> default
+    if ($avatar === '') {
+        return 'images/user/00.jpg';
+    }
+
+    // Chuẩn hóa path
+    $avatar = str_replace('\\', '/', $avatar);
+
+    // Nếu là URL (http/https) thì dùng luôn
+    if (preg_match('#^https?://#i', $avatar)) {
+        return $avatar;
+    }
+
+    // Kiểm tra file local
+    $candidates = [
+        ltrim($avatar, '/'),
+        'images/user/' . basename($avatar),
+        'images/' . basename($avatar),
+    ];
+
+    foreach (array_unique($candidates) as $candidate) {
+        $local = __DIR__ . '/../' . $candidate;
+        if (is_file($local)) {
+            return str_replace('\\', '/', $candidate);
+        }
+    }
+
+    // fallback cuối
+    return 'images/user/00.jpg';
+}
 function username_valid(string $username): bool
 {
     return (bool) preg_match('/^[A-Za-z0-9_]+$/', $username);
@@ -241,47 +276,48 @@ function render_stars(int $count = 5): string
     return $html;
 }
 
-function render_book_card(array $book, int $index = 1, string $buttonLabel = 'Mua Ngay'): string
-{
-    $bookId = (int) $book['id'];
-    $image = h(book_image_src($book, $index));
-    $title = h($book['bookname'] ?? '');
-    $author = h($book['author_name'] ?? '');
-    $price = vn_money(book_sell_price($book));
-    $link = 'book-page.php?id=' . $bookId;
-    $cartLink = 'Checkout.php?add=' . $bookId;
-    $user = current_user();
-    $isFavourite = $user ? favourite_exists((int) $user['id'], $bookId) : false;
-    $favouriteLink = $user ? 'book-page.php?id=' . $bookId . '&favorite=1' : 'sign-in.php';
-    $favouriteIcon = $isFavourite ? 'ri-heart-fill text-danger' : 'ri-heart-line text-danger';
+function render_book_card(array $book, int $index = 1, string $buttonLabel = 'Mua Ngay'): string { 
+    $bookId = (int) $book['id']; 
+    $image = h(book_image_src($book, $index)); 
+    $title = h($book['bookname'] ?? ''); 
+    $author = h($book['author_name'] ?? ''); 
+    $price = vn_money(book_sell_price($book)); 
+    $link = 'book-page.php?id=' . $bookId; 
+    $cartLink = 'Checkout.php?add=' . $bookId; 
+    $user = current_user(); 
+    $isFavourite = $user ? favourite_exists((int) $user['id'], $bookId) : false; 
+    $favouriteLink = $user      
+        ? 'favourite.php?favorite=' . $bookId . '&redirect=' . urlencode($_SERVER['REQUEST_URI'])     
+        : 'sign-in.php'; 
+    $favouriteIcon = $isFavourite ? 'ri-heart-fill text-danger' : 'ri-heart-line text-danger'; 
 
     return '
-      <div class="col-sm-6 col-md-4 col-lg-3">
-         <div class="iq-card iq-card-block iq-card-stretch iq-card-height browse-bookcontent">
-            <div class="iq-card-body p-0">
-               <div class="d-flex align-items-center">
-                  <div class="col-6 p-0 position-relative image-overlap-shadow">
-                     <a href="' . $link . '"><img class="img-fluid rounded w-100" src="' . $image . '" alt=""></a>
-                     <div class="view-book">
-                        <a href="' . $link . '" class="btn btn-sm btn-white">' . h($buttonLabel) . '</a>
-                     </div>
-                  </div>
-                  <div class="col-6">
-                     <div class="mb-2">
-                        <h6 class="mb-1">' . $title . '</h6>
-                        <p class="font-size-13 line-height mb-1">' . $author . '</p>
-                        <div class="d-block line-height"><span class="font-size-11 text-warning">' . render_stars() . '</span></div>
-                     </div>
-                     <div class="price d-flex align-items-center"><h6><b>' . $price . ' đ</b></h6></div>
-                     <div class="iq-product-action">
-                        <a href="' . $cartLink . '"><i class="ri-shopping-cart-2-fill text-primary"></i></a>
-                        <a href="' . $favouriteLink . '" class="ml-2"><i class="' . $favouriteIcon . '"></i></a>
-                     </div>
-                  </div>
-               </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 equal-height-card"> <!-- Thêm lớp equal-height-card -->
+            <div class="iq-card iq-card-block iq-card-stretch iq-card-height browse-bookcontent">
+                <div class="iq-card-body p-0">
+                    <div class="d-flex align-items-center">
+                        <div class="col-6 p-0 position-relative image-overlap-shadow">
+                            <a href="' . $link . '"><img class="img-fluid rounded w-100" src="' . $image . '" alt=""></a>
+                            <div class="view-book">
+                                <a href="' . $link . '" class="btn btn-sm btn-white">' . h($buttonLabel) . '</a>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <h6 class="mb-1">' . $title . '</h6>
+                                <p class="font-size-13 line-height mb-1">' . $author . '</p>
+                                <div class="d-block line-height"><span class="font-size-11 text-warning">' . render_stars() . '</span></div>
+                            </div>
+                            <div class="price d-flex align-items-center"><h6><b>' . $price . ' đ</b></h6></div>
+                            <div class="iq-product-action">
+                                <a href="' . $cartLink . '"><i class="ri-shopping-cart-2-fill text-primary"></i></a>
+                                <a href="' . $favouriteLink . '" class="ml-2"><i class="' . $favouriteIcon . '"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>';
+        </div>';
 }
 
 function user_addresses(int $userId): array
@@ -413,9 +449,10 @@ function create_order_from_cart(int $userId, int $addressId, string $paymentMeth
 
     mysqli_begin_transaction(db());
     try {
-        $stmt = mysqli_prepare(db(), 'INSERT INTO orders (user_id, `date`, price, status, receiver_name, receiver_phone, shipping_address, ward, district, province, payment_method) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $expectedDeliveryDate = date('Y-m-d', strtotime('+' . random_int(3, 10) . ' days'));
+        $stmt = mysqli_prepare(db(), 'INSERT INTO orders (user_id, `date`, expected_delivery_date, price, status, receiver_name, receiver_phone, shipping_address, ward, district, province, payment_method) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $status = 'pending';
-        mysqli_stmt_bind_param($stmt, 'idssssssss', $userId, $total, $status, $receiverName, $receiverPhone, $shippingAddress, $ward, $district, $province, $paymentMethod);
+        mysqli_stmt_bind_param($stmt, 'isdssssssss', $userId, $expectedDeliveryDate, $total, $status, $receiverName, $receiverPhone, $shippingAddress, $ward, $district, $province, $paymentMethod);
         mysqli_stmt_execute($stmt);
         $orderId = mysqli_insert_id(db());
         mysqli_stmt_close($stmt);
@@ -455,6 +492,55 @@ function order_items_for(int $orderId): array
 function order_summary(int $orderId): ?array
 {
     return fetch_one('SELECT o.*, u.fullname, u.username, u.email, u.phone AS user_phone FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ' . (int) $orderId . ' LIMIT 1');
+}
+
+
+function upload_file($field_name, $target_dir, $old_file = null)
+{
+    if (!isset($_FILES[$field_name]) || (int) $_FILES[$field_name]['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+
+    $file = $_FILES[$field_name];
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!in_array($ext, $allowed, true)) {
+        return null;
+    }
+
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+
+    $filename = time() . '_' . bin2hex(random_bytes(5)) . '.' . $ext;
+    $targetPath = rtrim($target_dir, '/\\') . '/' . $filename;
+
+    if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+        return null;
+    }
+
+    if ($old_file) {
+        delete_file_if_exists($old_file);
+    }
+
+    return str_replace('\\', '/', $targetPath);
+}
+
+function delete_file_if_exists($filepath, $filename = null): void
+{
+    if ($filepath === null && $filename === null) {
+        return;
+    }
+
+    if ($filename === null) {
+        $fullPath = __DIR__ . '/../' . ltrim((string) $filepath, '/');
+    } else {
+        $fullPath = rtrim((string) $filepath, '/\\') . '/' . ltrim((string) $filename, '/\\');
+    }
+
+    if (is_file($fullPath)) {
+        @unlink($fullPath);
+    }
 }
 
 function render_flash(): void

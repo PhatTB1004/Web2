@@ -58,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page">
+<style>.import-row{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:14px;background:#fff}.import-row + .import-row{margin-top:8px}</style>
+
     <div class="container-fluid">
         <div class="iq-card">
             <div class="iq-card-header">

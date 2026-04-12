@@ -1,8 +1,8 @@
 <?php $categories = categories_all(); ?>
 <!-- Sidebar  -->
 <div class="iq-sidebar">
-   <div class="iq-sidebar-logo d-flex justify-content-between">
-      <a href="index.php" class="header-logo">
+   <div class="iq-sidebar-logo d-flex justify-content-between align-items-center">
+      <a href="index.php" class="header-logo d-flex align-items-center">
          <img src="images/logo.png" class="img-fluid rounded-normal" alt="">
          <div class="logo-title"><span class="text-primary text-uppercase">NHASACHTV</span></div>
       </a>
@@ -25,7 +25,7 @@
             </li>
             <li><a href="favourite.php"><i class="ri-heart-line"></i>Yêu Thích</a></li>
             <?php if (is_logged_in()): ?>
-               <li><a href="account-order.php"><i class="ri-shopping-bag-2-line"></i>Đơn hàng của tôi</a></li>
+               <li><a href="account-order.php"><i class="ri-shopping-bag-2-line"></i>Lịch sử mua hàng</a></li>
                <li><a href="profile.php"><i class="ri-user-3-line"></i>Tài khoản của tôi</a></li>
                <li><a href="sign-in.php?logout=1"><i class="ri-logout-box-line"></i>Đăng xuất</a></li>
             <?php else: ?>

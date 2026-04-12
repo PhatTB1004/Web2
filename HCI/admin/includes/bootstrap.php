@@ -107,6 +107,128 @@ function calc_sale_price(float $cost, float $profitPercent): float
     return round($cost * (1 + $profitPercent / 100), 2);
 }
 
+function app_settings_file(): string
+{
+    return dirname(__DIR__, 2) . '/app-settings.json';
+}
+
+function app_settings_defaults(): array
+{
+    return [
+        'default_profit_percent' => 20,
+        'inventory_threshold' => 5,
+    ];
+}
+
+function app_settings(): array
+{
+    static $settings = null;
+    if ($settings !== null) {
+        return $settings;
+    }
+
+    $settings = app_settings_defaults();
+    $file = app_settings_file();
+    if (is_file($file)) {
+        $json = json_decode((string) file_get_contents($file), true);
+        if (is_array($json)) {
+            $settings = array_merge($settings, $json);
+        }
+    }
+
+    return $settings;
+}
+
+function app_setting(string $key, $default = null)
+{
+    $settings = app_settings();
+    return $settings[$key] ?? $default;
+}
+
+function save_app_setting(string $key, $value): bool
+{
+    $file = app_settings_file();
+    $settings = app_settings();
+    $settings[$key] = is_numeric($value) ? (float) $value : $value;
+
+    $dir = dirname($file);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+
+    return (bool) file_put_contents($file, json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
+
+function list_sort_state(array $allowed, string $defaultField, string $defaultDir = 'asc'): array
+{
+    $sort = strtolower((string) ($_GET['sort'] ?? $defaultField));
+    if (!array_key_exists($sort, $allowed)) {
+        $sort = $defaultField;
+    }
+
+    $dir = strtolower((string) ($_GET['dir'] ?? $defaultDir));
+    if (!in_array($dir, ['asc', 'desc'], true)) {
+        $dir = $defaultDir;
+    }
+
+    return [$sort, $dir];
+}
+
+function list_sort_clause(array $allowed, string $sort, string $dir, string $defaultField): string
+{
+    $column = $allowed[$sort] ?? $allowed[$defaultField] ?? $defaultField;
+    $direction = strtolower($dir) === 'desc' ? 'DESC' : 'ASC';
+    return 'ORDER BY ' . $column . ' ' . $direction;
+}
+
+function sort_url(string $field, array $query, string $currentSort, string $currentDir): string
+{
+    $query['sort'] = $field;
+    $query['dir'] = ($currentSort === $field && strtolower($currentDir) === 'asc') ? 'desc' : 'asc';
+    return '?' . http_build_query($query);
+}
+
+function render_sortable_th(string $field, string $label, array $query, string $currentSort, string $currentDir): string
+{
+    $active = $currentSort === $field;
+    $arrow = $active ? ($currentDir === 'asc' ? ' ↑' : ' ↓') : '';
+    $url = sort_url($field, $query, $currentSort, $currentDir);
+    $class = $active ? ' class="text-primary"' : '';
+    return '<a' . $class . ' href="' . h($url) . '">' . h($label) . $arrow . '</a>';
+}
+
+function order_status_allowed_values(string $status): array
+{
+    switch ($status) {
+        case 'pending':
+            return ['pending', 'confirmed', 'cancelled'];
+        case 'confirmed':
+            return ['confirmed', 'delivered', 'cancelled'];
+        case 'delivered':
+            return ['delivered'];
+        case 'cancelled':
+            return ['cancelled'];
+        default:
+            return ['pending', 'confirmed', 'delivered', 'cancelled'];
+    }
+}
+
+function order_status_select_options(string $currentStatus): string
+{
+    $labels = [
+        'pending' => 'Chờ xử lý',
+        'confirmed' => 'Đã xác nhận',
+        'delivered' => 'Đã giao',
+        'cancelled' => 'Đã hủy',
+    ];
+    $allowed = order_status_allowed_values($currentStatus);
+    $html = '';
+    foreach ($allowed as $status) {
+        $html .= '<option value="' . h($status) . '"' . ($currentStatus === $status ? ' selected' : '') . '>' . h($labels[$status] ?? $status) . '</option>';
+    }
+    return $html;
+}
+
 function is_admin_logged_in(): bool
 {
     return !empty($_SESSION['admin']) && is_array($_SESSION['admin']);
@@ -159,12 +281,21 @@ function render_pagination(int $page, int $totalPages, array $query = []): void
         return;
     }
 
-    echo '<nav><ul class="pagination justify-content-center">';
+    echo '<nav><ul class="pagination justify-content-center flex-wrap">';
+
+    $prevDisabled = $page <= 1 ? ' disabled' : '';
+    $query['page'] = max(1, $page - 1);
+    echo '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="?' . h(http_build_query($query)) . '">‹‹</a></li>';
+
     for ($i = 1; $i <= $totalPages; $i++) {
         $query['page'] = $i;
-        $class = $i === $page ? 'active' : '';
-        echo '<li class="page-item ' . $class . '"><a class="page-link" href="?' . h(http_build_query($query)) . '">' . $i . '</a></li>';
+        $class = $i === $page ? ' active' : '';
+        echo '<li class="page-item' . $class . '"><a class="page-link" href="?' . h(http_build_query($query)) . '">' . $i . '</a></li>';
     }
+
+    $nextDisabled = $page >= $totalPages ? ' disabled' : '';
+    $query['page'] = min($totalPages, $page + 1);
+    echo '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="?' . h(http_build_query($query)) . '">››</a></li>';
     echo '</ul></nav>';
 }
 
@@ -282,7 +413,7 @@ function complete_import(int $importId): bool
     }
 }
 
-function update_order_status(int $orderId, string $newStatus): bool
+function update_order_status(int $orderId, string $newStatus, string $cancelReason = '', string $cancelBy = ''): bool
 {
     $conn = db();
     mysqli_begin_transaction($conn);
@@ -294,6 +425,11 @@ function update_order_status(int $orderId, string $newStatus): bool
         }
 
         $oldStatus = $order['status'];
+        $allowed = order_status_allowed_values($oldStatus);
+        if (!in_array($newStatus, $allowed, true)) {
+            throw new Exception('Trạng thái đơn hàng không hợp lệ.');
+        }
+
         if ($oldStatus !== $newStatus) {
             $items = fetch_all('SELECT oi.book_id, oi.quantity, b.stock_quantity, b.bookname FROM order_items oi JOIN books b ON b.id = oi.book_id WHERE oi.order_id = ' . (int) $orderId . ' FOR UPDATE');
 
@@ -325,8 +461,34 @@ function update_order_status(int $orderId, string $newStatus): bool
             }
         }
 
-        $stmt = mysqli_prepare($conn, 'UPDATE orders SET status = ? WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'si', $newStatus, $orderId);
+        if ($newStatus === 'delivered') {
+            $today = date('Y-m-d');
+            $stmt = mysqli_prepare($conn, 'UPDATE orders SET status = ?, delivery_date = ?, date_received = ?, cancel_reason = NULL, cancel_by = NULL WHERE id = ?');
+            mysqli_stmt_bind_param($stmt, 'sssi', $newStatus, $today, $today, $orderId);
+        } elseif ($newStatus === 'cancelled') {
+    $stmt = mysqli_prepare($conn, '
+        UPDATE orders 
+        SET status = ?, 
+            cancel_reason = ?, 
+            cancel_by = ?,
+            date_received = NULL,
+            delivery_date = NULL
+        WHERE id = ?
+    ');
+    mysqli_stmt_bind_param($stmt, 'sssi', $newStatus, $cancelReason, $cancelBy, $orderId);
+} else {
+    $stmt = mysqli_prepare($conn, '
+        UPDATE orders 
+        SET status = ?, 
+            date_received = NULL,
+            delivery_date = NULL,
+            cancel_reason = NULL, 
+            cancel_by = NULL 
+        WHERE id = ?
+    ');
+    mysqli_stmt_bind_param($stmt, 'si', $newStatus, $orderId);
+}
+
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 

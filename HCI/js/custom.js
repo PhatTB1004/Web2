@@ -718,3 +718,67 @@ Index Of Script
       });
    }
 })();
+(function () {
+  const form = document.getElementById('signup-form');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+
+    const receiverName = document.getElementById('receiver_name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const addressDetail = document.getElementById('address_detail').value.trim();
+    const ward = document.getElementById('ward').value.trim();
+    const district = document.getElementById('district').value.trim();
+    const province = document.getElementById('province').value.trim();
+
+    const usernameOk = /^[A-Za-z0-9_]+$/.test(username);
+    const emailOk = /^[A-Za-z0-9._%+-]+@gmail\.com$/i.test(email);
+    const phoneOk = /^0\d{9}$/.test(phone); // Check phone
+    const receiverNameOk = /^[A-Za-z ]+$/.test(receiverName); // Check name
+    const addressOk = /^[A-Za-z0-9\s\/]+$/.test(addressDetail); // Check address
+
+    if (!usernameOk) {
+      alert('Tên tài khoản chỉ được chứa chữ cái, số và dấu gạch dưới.');
+      e.preventDefault();
+      return;
+    }
+    if (!emailOk) {
+      alert('Email phải có đuôi @gmail.com.');
+      e.preventDefault();
+      return;
+    }
+    if (!phoneOk) {
+      alert('Số điện thoại phải là 10 chữ số và bắt đầu bằng số 0.');
+      e.preventDefault();
+      return;
+    }
+    if (!receiverNameOk) {
+      alert('Họ tên chỉ được chứa chữ cái và khoảng trắng.');
+      e.preventDefault();
+      return;
+    }
+    if (!addressOk) {
+      alert('Địa chỉ chỉ được chứa chữ cái, số và dấu gạch chéo ("/").');
+      e.preventDefault();
+      return;
+    }
+    if (password.length < 6) {
+      alert('Mật khẩu phải có ít nhất 6 ký tự.');
+      e.preventDefault();
+      return;
+    }
+    if (password !== confirm) {
+      alert('Mật khẩu xác nhận không khớp.');
+      e.preventDefault();
+      return;
+    }
+
+    if (!receiverName || !phone || !addressDetail || !ward || !district || !province) {
+      alert('Vui lòng nhập đầy đủ địa chỉ giao hàng mặc định.');
+      e.preventDefault();
+    }
+  });
+})();

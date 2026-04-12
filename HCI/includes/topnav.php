@@ -3,20 +3,22 @@ $cartItems = cart_items();
 $cartCount = array_sum(array_map(static fn ($item) => (int) $item['quantity'], $cartItems));
 $user = current_user();
 $pageBreadcrumb = $pageBreadcrumb ?? ($pageTitle ?? 'Trang Chủ');
+$avatarPath = !empty($user['image']) ? $user['image'] : 'images/user/00.jpg';
 ?>
 <!-- TOP Nav Bar -->
 <div class="iq-top-navbar">
    <div class="iq-navbar-custom">
       <nav class="navbar navbar-expand-lg navbar-light p-0">
          <div class="iq-menu-bt d-flex align-items-center">
-            <div class="wrapper-menu" aria-label="Đóng mở menu">
-               <span class="line-menu half start"></span>
-               <span class="line-menu"></span>
-               <span class="line-menu half end"></span>
-            </div>
+            <div class="wrapper-menu">
+                        <div class="main-circle"><i class="las la-bars"></i></div>
+                     </div>
             <div class="iq-navbar-logo d-flex justify-content-between">
                <a href="index.php" class="header-logo">
-                  <img src="images/logo.png" class="img-fluid rounded-normal" alt="">
+                  <img src="<?php echo h($avatarPath); ?>" 
+     class="img-fluid rounded-circle mr-3" 
+     alt="user" 
+     style="width:42px;height:42px;object-fit:cover;">
                   <div class="logo-title"><span class="text-primary text-uppercase">NHASACHTV</span></div>
                </a>
             </div>
@@ -27,7 +29,7 @@ $pageBreadcrumb = $pageBreadcrumb ?? ($pageTitle ?? 'Trang Chủ');
                <input type="text" name="q" class="text search-input" 
           placeholder="Tìm kiếm sản phẩm..." 
           value="<?php echo h($_GET['q'] ?? ''); ?>"
-          style="padding-left: 45px !important; background-color: white !important; border: 1px solid #eee;">
+          style="padding-left: 45px !important; background-color: white !important; border: 1px solid #eee; height: 46px; border-radius: 14px;">
                <button type="submit" class="search-link" style="
        border: none; 
        background: none; 
@@ -93,7 +95,7 @@ $pageBreadcrumb = $pageBreadcrumb ?? ($pageTitle ?? 'Trang Chủ');
                <?php if ($user): ?>
                   <li class="line-height pt-3">
                      <a href="#" class="search-toggle iq-waves-effect d-flex align-items-center">
-                        <img src="images/user/1.jpg" class="img-fluid rounded-circle mr-3" alt="user">
+                        <img src="<?php echo h(user_avatar_url($user)); ?>" class="img-fluid rounded-circle mr-3" alt="user" style="width:42px;height:42px;object-fit:cover;">
                         <div class="caption">
                            <h6 class="mb-1 line-height"><?php echo h(user_display_name($user)); ?></h6>
                            <p class="mb-0 text-primary">Tài Khoản</p>
@@ -104,7 +106,7 @@ $pageBreadcrumb = $pageBreadcrumb ?? ($pageTitle ?? 'Trang Chủ');
                            <div class="iq-card-body p-0">
                               <div class="bg-primary p-3"><h5 class="mb-0 text-white line-height">Xin Chào <?php echo h(user_display_name($user)); ?></h5></div>
                               <a href="profile.php" class="iq-sub-card iq-bg-primary-hover"><div class="media align-items-center"><div class="rounded iq-card-icon iq-bg-primary"><i class="ri-file-user-line"></i></div><div class="media-body ml-3"><h6 class="mb-0">Tài khoản của tôi</h6></div></div></a>
-                              <a href="account-order.php" class="iq-sub-card iq-bg-primary-hover"><div class="media align-items-center"><div class="rounded iq-card-icon iq-bg-primary"><i class="ri-account-box-line"></i></div><div class="media-body ml-3"><h6 class="mb-0">Đơn hàng của tôi</h6></div></div></a>
+                              <a href="account-order.php" class="iq-sub-card iq-bg-primary-hover"><div class="media align-items-center"><div class="rounded iq-card-icon iq-bg-primary"><i class="ri-account-box-line"></i></div><div class="media-body ml-3"><h6 class="mb-0">Lịch sử mua hàng</h6></div></div></a>
                               <a href="favourite.php" class="iq-sub-card iq-bg-primary-hover"><div class="media align-items-center"><div class="rounded iq-card-icon iq-bg-primary"><i class="ri-heart-line"></i></div><div class="media-body ml-3"><h6 class="mb-0">Yêu Thích</h6></div></div></a>
                               <a href="sign-in.php?logout=1" class="iq-sub-card iq-bg-primary-hover"><div class="media align-items-center"><div class="rounded iq-card-icon iq-bg-primary"><i class="ri-logout-box-line"></i></div><div class="media-body ml-3"><h6 class="mb-0">Đăng xuất</h6></div></div></a>
                            </div>
@@ -113,8 +115,8 @@ $pageBreadcrumb = $pageBreadcrumb ?? ($pageTitle ?? 'Trang Chủ');
                   </li>
                <?php else: ?>
                   <li class="line-height pt-3 d-flex align-items-center">
-                     <a href="sign-in.php" class="btn btn-outline-primary btn-sm mr-2">Đăng nhập</a>
-                     <a href="sign-up.php" class="btn btn-primary btn-sm">Đăng ký</a>
+                     <a href="sign-in.php" class="auth-btn">Đăng nhập</a>
+                     <a href="sign-up.php" class="auth-btn">Đăng ký</a>
                   </li>
                <?php endif; ?>
             </ul>

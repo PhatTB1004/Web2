@@ -12,11 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $authorId = (int) ($_POST['author_id'] ?? 0);
     $info = trim($_POST['info'] ?? '');
     $costPrice = (float) ($_POST['cost_price'] ?? 0);
-    $profitPercent = (float) ($_POST['profit_percent'] ?? 0);
+    $profitPercent = (float) ($_POST['profit_percent'] ?? app_setting('default_profit_percent', 20));
     $stockQuantity = (int) ($_POST['stock_quantity'] ?? 0);
     $status = $_POST['status'] ?? 'active';
     $categoryIds = $_POST['category_ids'] ?? [];
-    $image = upload_file('image', 'images/books', null) ?? '';
+    $image = upload_file('image', '../images/books', null) ?? '';
     $sellPrice = calc_sale_price($costPrice, $profitPercent);
 
     if ($bookname === '' || $authorId <= 0) {
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page">
+
     <div class="container-fluid">
         <div class="iq-card">
             <div class="iq-card-header">
@@ -88,8 +88,7 @@ include __DIR__ . '/includes/sidebar.php';
                                 class="form-control"></textarea></div>
                         <div class="col-md-3 form-group"><label>Giá vốn</label><input type="number" step="0.01" min="0"
                                 name="cost_price" class="form-control" value="0"></div>
-                        <div class="col-md-3 form-group"><label>% lợi nhuận</label><input type="number" step="0.01"
-                                min="0" name="profit_percent" class="form-control" value="20"></div>
+                        <div class="col-md-3 form-group"><label>% Lợi Nhuận</label><input type="number" step="0.01" min="0" name="profit_percent" class="form-control" value="<?php echo h(app_setting('default_profit_percent', 20)); ?>"></div>
                         <div class="col-md-3 form-group"><label>Số lượng tồn đầu</label><input type="number" step="1"
                                 min="0" name="stock_quantity" class="form-control" value="0"></div>
                         <div class="col-md-3 form-group"><label>Hiện trạng</label><select name="status"

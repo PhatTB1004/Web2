@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $removeImage = !empty($_POST['remove_image']);
     $image = $row['image'];
     if ($removeImage && $image) {
-        delete_file_if_exists('images/authors', $image);
+        delete_file_if_exists('../images/authors', $image);
         $image = '';
     }
-    $newImage = upload_file('image', 'images/authors', $image);
+    $newImage = upload_file('image', '../images/authors', $image);
     if ($newImage !== $image) {
         if ($image) {
-            delete_file_if_exists('images/authors', $image);
+            delete_file_if_exists('../images/authors', $image);
         }
         $image = $newImage;
     }
@@ -41,5 +41,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page"><div class="container-fluid"><div class="iq-card"><div class="iq-card-header"><h4 class="card-title mb-0">Sửa tác giả</h4></div><div class="iq-card-body"><form method="post" enctype="multipart/form-data"><input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>"><div class="form-group"><label>Họ tên</label><input name="fullname" class="form-control" value="<?php echo h($row['fullname']); ?>" required></div><div class="form-group"><label>Ảnh hiện tại</label><div class="mb-2"><?php if (!empty($row['image'])): ?><img src="../images/authors/<?php echo h($row['image']); ?>" alt="" style="max-width:120px;border-radius:8px;"> <?php else: ?>Chưa có ảnh<?php endif; ?></div><label><input type="checkbox" name="remove_image" value="1"> Bỏ hình</label></div><div class="form-group"><label>Chọn ảnh mới</label><input type="file" name="image" class="form-control-file" accept="image/*"></div><div class="form-group"><label>Thông tin</label><textarea name="info" rows="4" class="form-control"><?php echo h($row['info']); ?></textarea></div><button class="btn btn-primary">Lưu</button> <a href="author.php" class="btn btn-secondary">Quay lại</a></form></div></div></div></div></div>
+<div class="container-fluid">
+    <div class="iq-card">
+        <div class="iq-card-header">
+            <h4 class="card-title mb-0">Sửa tác giả</h4>
+        </div>
+        <div class="iq-card-body">
+            <form method="post" enctype="multipart/form-data"><input type="hidden" name="id"
+                    value="<?php echo (int) $row['id']; ?>">
+                <div class="form-group"><label>Họ tên</label><input name="fullname" class="form-control"
+                        value="<?php echo h($row['fullname']); ?>" required></div>
+                <div class="form-group"><label>Ảnh hiện tại</label>
+                    <div class="mb-2"><?php if (!empty($row['image'])): ?><img
+                            src="../images/authors/<?php echo h($row['image']); ?>" alt=""
+                            style="max-width:120px;border-radius:8px;"> <?php else: ?>Chưa có ảnh<?php endif; ?></div>
+                    <label><input type="checkbox" name="remove_image" value="1"> Bỏ hình</label>
+                </div>
+                <div class="form-group"><label>Chọn ảnh mới</label><input type="file" name="image"
+                        class="form-control-file" accept="image/*"></div>
+                <div class="form-group"><label>Thông tin</label><textarea name="info" rows="4"
+                        class="form-control"><?php echo h($row['info']); ?></textarea></div><button
+                    class="btn btn-primary">Lưu</button> <a href="author.php" class="btn btn-secondary">Quay lại</a>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+</div>
 <?php include __DIR__ . '/includes/footer.php'; ?>

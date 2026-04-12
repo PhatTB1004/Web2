@@ -35,8 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $hash = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = mysqli_prepare(db(), 'INSERT INTO users (username, password, fullname, phone, email, role, status) VALUES (?, ?, ?, ?, ?, ?, ?)');
-    mysqli_stmt_bind_param($stmt, 'sssssss', $username, $hash, $fullname, $phone, $email, $role, $status);
+    $avatar = '../images/user/00.jpg';
+    $stmt = mysqli_prepare(db(), 'INSERT INTO users (username, password, fullname, phone, email, role, status, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+    mysqli_stmt_bind_param($stmt, 'ssssssss', $username, $hash, $fullname, $phone, $email, $role, $status, $avatar);
     mysqli_stmt_execute($stmt);
     $userId = mysqli_insert_id(db());
     mysqli_stmt_close($stmt);
@@ -56,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
-<div id="content-page" class="content-page">
+
    <div class="container-fluid">
       <div class="iq-card">
          <div class="iq-card-header"><h4 class="card-title mb-0">Thêm tài khoản</h4></div>
